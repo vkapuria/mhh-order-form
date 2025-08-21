@@ -1,4 +1,4 @@
-export type ServiceType = 'writing' | 'editing'
+export type ServiceType = 'writing' | 'editing' | 'presentation'
 
 export type FormStep = 'service' | 'contact' | 'assignment' | 'details' | 'review'
 

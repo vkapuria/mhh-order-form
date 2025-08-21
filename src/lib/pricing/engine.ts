@@ -57,11 +57,22 @@ export function calculateEnhancedPricing({
   }
 
   // Base pricing per service type
-  let basePricePerPage = serviceType === 'writing' ? 14 : 9
+  let basePricePerPage: number
+  if (serviceType === 'writing') {
+    basePricePerPage = 14
+  } else if (serviceType === 'editing') {
+    basePricePerPage = 9
+  } else if (serviceType === 'presentation') {
+    basePricePerPage = 10  // $10 per slide
+  } else {
+    basePricePerPage = 14 // fallback
+  }
   
   // Document type adjustments
   if (documentType === 'dissertation' || documentType === 'thesis') {
     basePricePerPage *= 1.3
+  } else if (serviceType === 'presentation' && documentType === 'pitch_deck') {
+    basePricePerPage *= 1.2 // Premium for pitch decks
   }
   
   // Deadline multipliers
@@ -78,38 +89,53 @@ export function calculateEnhancedPricing({
   const deadlineMultiplier = deadlineMultipliers[deadline] || 1.0
   const adjustedPricePerPage = basePricePerPage * deadlineMultiplier
   
-  // Bulk discounts
+  // Bulk discounts - different thresholds for presentations
   let discountPercentage = 0
   let discountTier: string | null = null
   
-  if (pages >= 15) {
-    discountPercentage = 20
-    discountTier = 'Premium Saver'
-  } else if (pages >= 10) {
-    discountPercentage = 15
-    discountTier = 'Value Pro'
-  } else if (pages >= 5) {
-    discountPercentage = 10
-    discountTier = 'Smart Saver'
+  if (serviceType === 'presentation') {
+    // Presentation bulk discounts (slides)
+    if (pages >= 20) {
+      discountPercentage = 20
+      discountTier = 'Premium Saver'
+    } else if (pages >= 15) {
+      discountPercentage = 15
+      discountTier = 'Value Pro'
+    } else if (pages >= 10) {
+      discountPercentage = 10
+      discountTier = 'Smart Saver'
+    }
+  } else {
+    // Writing/Editing bulk discounts (pages)
+    if (pages >= 15) {
+      discountPercentage = 20
+      discountTier = 'Premium Saver'
+    } else if (pages >= 10) {
+      discountPercentage = 15
+      discountTier = 'Value Pro'
+    } else if (pages >= 5) {
+      discountPercentage = 10
+      discountTier = 'Smart Saver'
+    }
   }
   
-  // Calculate next discount incentive
+  // Calculate next discount incentive - NO pushy suggestions for presentations
   let nextDiscountAt: number | null = null
   let nextDiscountPercentage: number | null = null
   let bulkIncentiveMessage: string | null = null
   
-  if (pages < 5) {
-    nextDiscountAt = 5
-    nextDiscountPercentage = 10
-    bulkIncentiveMessage = `Add ${5 - pages} more pages to unlock 10% Smart Saver discount!`
-  } else if (pages < 10) {
-    nextDiscountAt = 10
-    nextDiscountPercentage = 15
-    bulkIncentiveMessage = `Add ${10 - pages} more pages to unlock 15% Value Pro discount!`
-  } else if (pages < 15) {
-    nextDiscountAt = 15
-    nextDiscountPercentage = 20
-    bulkIncentiveMessage = `Add ${15 - pages} more pages to unlock 20% Premium Saver discount!`
+  if (serviceType !== 'presentation') {
+    // Only show bulk incentives for writing/editing
+    if (pages < 5) {
+      nextDiscountAt = 5
+      nextDiscountPercentage = 10
+    } else if (pages < 10) {
+      nextDiscountAt = 10
+      nextDiscountPercentage = 15
+    } else if (pages < 15) {
+      nextDiscountAt = 15
+      nextDiscountPercentage = 20
+    }
   }
   
   // Rush fees for urgent deadlines
@@ -138,7 +164,8 @@ export function calculateEnhancedPricing({
   let urgencyMessage: string | null = null
   let timeRemaining: string | null = null
   
-  if (isWeekend && pages >= 3) {
+  const minPagesForDiscount = serviceType === 'presentation' ? 5 : 3
+  if (isWeekend && pages >= minPagesForDiscount) {
     urgencyDiscount = subtotal * 0.05 // 5% weekend discount
     urgencyMessage = "🎉 Weekend Special: 5% Extra Discount!"
     timeRemaining = "Ends Monday at midnight"
@@ -150,8 +177,20 @@ export function calculateEnhancedPricing({
   const totalSavings = basePrice - finalPrice + urgencyDiscount
   
   // Competitor comparison (simulate competitor pricing)
-  const competitorPrice = basePrice * 1.4 // Assume competitors charge 40% more
+  let competitorMultiplier: number
+  if (serviceType === 'presentation') {
+    competitorMultiplier = 1.6 // PowerPoint freelancers charge 60% more
+  } else if (serviceType === 'editing') {
+    competitorMultiplier = 1.3 // Editors charge 30% more
+  } else {
+    competitorMultiplier = 1.4 // Writers charge 40% more
+  }
+  
+  const competitorPrice = basePrice * competitorMultiplier
   const competitorSavings = competitorPrice - finalPrice
+  
+  // Determine price per unit label
+  const finalPricePerUnit = finalPrice / pages
   
   return {
     basePrice: Math.round(basePrice * 100) / 100,
@@ -159,7 +198,7 @@ export function calculateEnhancedPricing({
     savings: Math.round(totalSavings * 100) / 100,
     discountPercentage,
     discountTier,
-    pricePerPage: Math.round((finalPrice / pages) * 100) / 100,
+    pricePerPage: Math.round(finalPricePerUnit * 100) / 100,
     rushFee: Math.round(rushFee * 100) / 100,
     rushFeePercentage,
     isRushOrder,

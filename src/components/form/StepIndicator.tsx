@@ -20,49 +20,49 @@ export default function StepIndicator({ currentStep, completedSteps }: StepIndic
   
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between">
-        {steps.map((step, index) => {
-          const isCompleted = completedSteps.includes(step.id)
-          const isCurrent = step.id === currentStep
-          const isUpcoming = index > getCurrentStepIndex()
-          
-          return (
-            <div key={step.id} className="flex items-center">
-              {/* Step Circle */}
-              <div className={`
-                flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-200
-                ${isCompleted 
-                  ? 'bg-blue-500 border-blue-500 text-white' 
-                  : isCurrent 
-                    ? 'border-blue-500 bg-blue-50 text-blue-600' 
-                    : 'border-gray-300 bg-white text-gray-400'
-                }
-              `}>
-                {isCompleted ? (
-                  <CheckIcon className="w-5 h-5" />
-                ) : (
-                  <span className="text-sm font-semibold">{index + 1}</span>
-                )}
-              </div>
-              
-              {/* Step Title */}
-              <div className="ml-3">
-                <div className={`text-sm font-medium ${
-                  isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-400'
-                }`}>
-                  {step.title}
+      {/* Simple progress line */}
+      <div className="relative">
+        <div className="absolute top-4 left-0 w-full h-1 bg-gray-200 rounded-full">
+          <div 
+            className="h-full bg-blue-500 rounded-full transition-all duration-500"
+            style={{ width: `${(getCurrentStepIndex() / (steps.length - 1)) * 100}%` }}
+          />
+        </div>
+        
+        <div className="relative flex justify-between">
+          {steps.map((step, index) => {
+            const isCompleted = completedSteps.includes(step.id)
+            const isCurrent = step.id === currentStep
+            
+            return (
+              <div key={step.id} className="flex flex-col items-center">
+                <div className={`
+                  flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 bg-white
+                  ${isCompleted 
+                    ? 'bg-blue-500 border-blue-500 text-white' 
+                    : isCurrent 
+                      ? 'border-blue-500 text-blue-600' 
+                      : 'border-gray-300 text-gray-400'
+                  }
+                `}>
+                  {isCompleted ? (
+                    <CheckIcon className="w-4 h-4" />
+                  ) : (
+                    <span className="text-xs font-semibold">{index + 1}</span>
+                  )}
+                </div>
+                
+                <div className="mt-2 text-center">
+                  <div className={`text-sm font-medium ${
+                    isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-400'
+                  }`}>
+                    {step.title}
+                  </div>
                 </div>
               </div>
-              
-              {/* Connector Line */}
-              {index < steps.length - 1 && (
-                <div className={`hidden md:block w-16 h-0.5 ml-6 ${
-                  isCompleted ? 'bg-blue-500' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )
