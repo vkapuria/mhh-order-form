@@ -1,7 +1,7 @@
 // src/app/checkout/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +24,8 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 
-export default function CheckoutPage() {
+// Separate component for the search params logic
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const [orderData, setOrderData] = useState<any>(null)
@@ -63,7 +64,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center">
         <Card className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Order Not Found</h2>
-          <p className="text-gray-600 mb-6">We couldn't find your order details.</p>
+          <p className="text-gray-600 mb-6">We couldn&apos;t find your order details.</p>
           <Button onClick={() => window.location.href = '/'}>
             <ArrowLeftIcon className="w-4 h-4 mr-2" />
             Back to Form
@@ -210,8 +211,8 @@ export default function CheckoutPage() {
             </Button>
           </div>
 
-                    {/* RIGHT SIDE: Payment Form */}
-                    <div className="space-y-6">
+          {/* RIGHT SIDE: Payment Form */}
+          <div className="space-y-6">
             {/* Payment Card */}
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">2. Make Secure Payment</h2>
@@ -270,7 +271,6 @@ export default function CheckoutPage() {
               </div>
             </Card>
 
-
             {/* Service Guarantees */}
             <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -305,5 +305,18 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Main component with Suspense wrapper
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   )
 }
