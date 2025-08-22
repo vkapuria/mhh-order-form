@@ -114,7 +114,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
                   }
                 }}
                 className={`
-                  p-6 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white
+                  px-6 py-4 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2
                   ${
                     selected
@@ -125,8 +125,8 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
               >
                 <div className="flex items-start gap-5">
                   {/* Simplified icon - single neutral color */}
-                  <div className="mt-1 flex-shrink-0 rounded-lg p-3 bg-gray-100">
-                    <Icon className="h-6 w-6 text-gray-600" />
+                  <div className="mt-2 flex-shrink-0">
+                    <Icon className="h-8 w-8 text-gray-600" />
                   </div>
 
                   <div className="flex-1">

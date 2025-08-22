@@ -231,3 +231,29 @@
 .pricing-card-enhanced .text-gray-600 {
   color: rgba(255, 255, 255, 0.8) !important;
 }
+
+/* ADD THIS SECTION TO REMOVE PURPLE FOCUS RINGS */
+/* Remove purple/blue focus rings from all inputs */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+button:focus-visible,
+[role="combobox"]:focus,
+[role="combobox"]:focus-visible,
+[data-slot="select-trigger"]:focus,
+[data-slot="select-trigger"]:focus-visible {
+  outline: none !important;
+  border-color: rgb(209 213 219) !important; /* gray-300 */
+  box-shadow: none !important;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 0 transparent !important;
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 0 transparent !important;
+}
+
+/* Add subtle gray focus for better UX */
+input:focus,
+textarea:focus {
+  border-color: rgb(156 163 175) !important; /* gray-400 */
+}

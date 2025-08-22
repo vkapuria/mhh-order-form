@@ -28,7 +28,8 @@ export default function FormWrapper() {
     fullName: '',
     instructions: '',
     referenceStyle: '',
-    files: []
+    files: [],
+    hasFiles: false
   })
 
   // Hooks
@@ -89,7 +90,7 @@ export default function FormWrapper() {
     setFormData({ ...formData, [field]: value })
   }
 
-  const handleDetailsChange = (field: string, value: string) => {
+  const handleDetailsChange = (field: string, value: string | number | boolean) => {
     setFormData({ ...formData, [field]: value })
   }
 
@@ -143,6 +144,7 @@ export default function FormWrapper() {
       case 'contact':
         return (
           <EmailCapture
+            serviceType={formData.serviceType}  // ADD THIS - pass service type
             fullName={formData.fullName || ''}
             email={formData.email || ''}
             onChange={(field, value) => setFormData({ ...formData, [field]: value })}
@@ -155,11 +157,15 @@ export default function FormWrapper() {
         return (
           <AssignmentDetails
             serviceType={formData.serviceType!}
+            previousData={{  // ADD THIS - pass previous selections
+              serviceType: formData.serviceType || '',
+              fullName: formData.fullName || '',
+              email: formData.email || ''
+            }}
             data={{
               subject: formData.subject || '',
               documentType: formData.documentType || '',
-              pages: formData.pages || 0,
-              deadline: formData.deadline || ''
+              instructions: formData.instructions || ''
             }}
             onChange={handleAssignmentChange}
             onNext={handleAssignmentNext}
@@ -170,10 +176,19 @@ export default function FormWrapper() {
       case 'details':
         return (
           <FinalDetails
-            data={{
+            previousData={{  // ADD THIS - pass all previous selections
+              serviceType: formData.serviceType || '',
               fullName: formData.fullName || '',
-              instructions: formData.instructions || '',
-              referenceStyle: formData.referenceStyle || ''
+              email: formData.email || '',
+              subject: formData.subject || '',
+              documentType: formData.documentType || '',
+              instructions: formData.instructions || ''
+            }}
+            data={{
+              deadline: formData.deadline || '',
+              referenceStyle: formData.referenceStyle || '',
+              pages: formData.pages || 0,
+              hasFiles: formData.hasFiles || false
             }}
             onChange={handleDetailsChange}
             onSubmit={handleFormSubmit}

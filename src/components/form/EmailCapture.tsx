@@ -4,7 +4,10 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import StepSummary from './StepSummary'
 import { EnvelopeIcon, UserIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import type { ServiceType } from '@/types'
 
 interface EmailCaptureProps {
   fullName: string
@@ -12,6 +15,7 @@ interface EmailCaptureProps {
   onChange: (field: string, value: string) => void
   onNext: () => void
   onBack: () => void
+  serviceType?: ServiceType
 }
 
 export default function EmailCapture({
@@ -20,6 +24,7 @@ export default function EmailCapture({
   onChange,
   onNext,
   onBack,
+  serviceType,
 }: EmailCaptureProps) {
   const [isEmailValid, setIsEmailValid] = useState(true)
 
@@ -42,84 +47,102 @@ export default function EmailCapture({
   const isValid = Boolean(fullName.trim() && email && validateEmail(email))
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Get Your Instant Quote</h2>
-        <p className="text-gray-600">Enter your details to receive your personalized quote</p>
-      </div>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Accordion Summary */}
+      {serviceType && (
+        <StepSummary
+          stepNumber={1}
+          title="Service Selected"
+          data={[
+            { label: 'Service', value: serviceType.charAt(0).toUpperCase() + serviceType.slice(1) }
+          ]}
+          onEdit={() => onBack()}
+        />
+      )}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Name & Email */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Full Name */}
-          <div>
-            <Label
-              htmlFor="fullName"
-              className="text-sm font-medium text-gray-700 flex items-center mb-2"
-            >
-              <UserIcon className="w-4 h-4 mr-2 text-gray-500" />
-              Full Name
-            </Label>
-            <Input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => onChange('fullName', e.target.value)}
-              placeholder="Enter your full name"
-              autoFocus
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <Label
-              htmlFor="email"
-              className="text-sm font-medium text-gray-700 flex items-center mb-2"
-            >
-              <EnvelopeIcon className="w-4 h-4 mr-2 text-gray-500" />
-              Email Address
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              onBlur={() => email && setIsEmailValid(validateEmail(email))}
-              placeholder="your.email@example.com"
-              className={!isEmailValid ? 'border-red-500 focus:ring-red-500' : ''}
-            />
-            {!isEmailValid && (
-              <p className="mt-1 text-sm text-red-600">Please enter a valid email address</p>
-            )}
-          </div>
+      {/* Main Form Card */}
+      <Card className="p-8 shadow-sm border-gray-200">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Who's this for?</h2>
+          <p className="text-gray-600">Quick details so we can personalize your quote</p>
         </div>
 
-        {/* Navigation */}
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
-          <Button
-            type="button"
-            onClick={onBack}
-            className="sm:w-auto w-full bg-white text-black border border-black hover:bg-gray-50 flex items-center justify-center gap-2"
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Back
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={!isValid} 
-            className="sm:w-auto w-full bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 flex items-center justify-center gap-2"
-          >
-            Continue to Assignment Details
-            <ArrowRightIcon className="w-4 h-4" />
-          </Button>
-        </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name & Email */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Full Name */}
+            <div>
+              <Label
+                htmlFor="fullName"
+                className="text-sm font-medium text-gray-700 flex items-center mb-2"
+              >
+                <UserIcon className="w-4 h-4 mr-2 text-gray-500" />
+                Full Name
+              </Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => onChange('fullName', e.target.value)}
+                placeholder="Enter your full name"
+                className="h-10 border-gray-400 focus:ring-0 focus:border-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0"
+                autoFocus
+              />
+            </div>
 
-        <p className="text-xs text-gray-500 text-center">
-          🔒 We protect your privacy. No spam, ever.
-        </p>
-      </form>
+            {/* Email */}
+            <div>
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700 flex items-center mb-2"
+              >
+                <EnvelopeIcon className="w-4 h-4 mr-2 text-gray-500" />
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                onBlur={() => email && setIsEmailValid(validateEmail(email))}
+                placeholder="your.email@example.com"
+                className={`h-10 border-gray-400 focus:ring-0 focus:border-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 ${
+                  !isEmailValid ? 'border-red-500' : ''
+                }`}
+              />
+              {!isEmailValid && (
+                <p className="mt-1 text-sm text-red-600">Please enter a valid email address</p>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
+            <Button
+              type="button"
+              onClick={onBack}
+              className="h-10 sm:w-auto w-full bg-white text-black border border-black hover:bg-gray-50 flex items-center justify-center gap-2"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={!isValid} 
+              className="h-10 sm:w-auto w-full bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 flex items-center justify-center gap-2"
+            >
+              Continue to Assignment Details
+              <ArrowRightIcon className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center">
+            🔒 We protect your privacy. No spam, ever.
+          </p>
+        </form>
+      </Card>
     </div>
   )
 }

@@ -13,6 +13,7 @@ export interface OrderFormData {
   instructions: string
   files: File[]
   referenceStyle: string
+  hasFiles: boolean  // ADD THIS
 }
 
 export interface PricingData {

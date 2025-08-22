@@ -10,7 +10,12 @@ import {
   DocumentTextIcon,
   TagIcon,
   BoltIcon,
-  PresentationChartLineIcon
+  UserIcon,
+  EnvelopeIcon,
+  AcademicCapIcon,
+  HashtagIcon,
+  PencilSquareIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { ServiceType, EnhancedPricingData } from '@/types'
 import { calculateEnhancedPricing } from '@/lib/pricing/engine'
@@ -49,6 +54,11 @@ export default function PricingSidebar({
 
   const getUnitLabel = () => {
     return formData.serviceType === 'presentation' ? 'slide' : 'page'
+  }
+
+  // Format document type for display
+  const formatDocumentType = (type: string) => {
+    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
   // Show trust signals only on first step
@@ -94,29 +104,93 @@ export default function PricingSidebar({
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-semibold text-gray-900">Order info</h4>
           <button className="text-gray-400 hover:text-gray-600">
-            ▼
+            <ChevronDownIcon className="w-5 h-5" />
           </button>
         </div>
 
         <div className="space-y-3">
           {/* Service Type */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Service</span>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium capitalize">
-                {formData.serviceType || 'Not selected'}
-              </span>
-              <button className="text-blue-500 text-sm hover:underline">Edit</button>
+          {formData.serviceType && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <DocumentTextIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Service</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium capitalize">
+                  {formData.serviceType}
+                </span>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Full Name */}
+          {formData.fullName && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Name</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium">{formData.fullName}</span>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Email */}
+          {formData.email && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <EnvelopeIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Email</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium truncate max-w-[150px]">
+                  {formData.email}
+                </span>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Subject */}
           {formData.subject && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Subject</span>
+              <div className="flex items-center gap-2">
+                <AcademicCapIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Subject</span>
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium capitalize">{formData.subject}</span>
-                <button className="text-blue-500 text-sm hover:underline">Edit</button>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Document Type */}
+          {formData.documentType && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <DocumentTextIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Paper Type</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium">
+                  {formatDocumentType(formData.documentType)}
+                </span>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
@@ -124,27 +198,37 @@ export default function PricingSidebar({
           {/* Pages/Slides */}
           {formData.pages > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">
-                {formData.serviceType === 'presentation' ? 'Slides' : 'Pages'}
-              </span>
+              <div className="flex items-center gap-2">
+                <HashtagIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {formData.serviceType === 'presentation' ? 'Slides' : 'Pages'}
+                </span>
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">
                   {formData.pages} {getUnitLabel()}{formData.pages !== 1 ? 's' : ''}
                 </span>
-                <button className="text-blue-500 text-sm hover:underline">Edit</button>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
 
-          {/* Instructions */}
-          {formData.instructions && (
+          {/* Deadline */}
+          {formData.deadline && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Instructions</span>
+              <div className="flex items-center gap-2">
+                <ClockIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-600">Deadline</span>
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium">
-                  {formData.instructions.substring(0, 20)}...
+                  {formData.deadline} day{formData.deadline !== '1' ? 's' : ''}
                 </span>
-                <button className="text-blue-500 text-sm hover:underline">Edit</button>
+                <button className="text-blue-500 hover:text-blue-600">
+                  <PencilSquareIcon className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
