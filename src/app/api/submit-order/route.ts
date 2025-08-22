@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { uploadToR2 } from '@/lib/r2'
 import { calculateEnhancedPricing } from '@/lib/pricing/engine'
+import { sendCustomerConfirmation, sendAdminNotification } from '@/lib/email'
+import { getCountryFromIP, getClientIP } from '@/lib/geolocation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,19 +28,26 @@ export async function POST(request: NextRequest) {
       }
       
       // Extract form fields
-      const orderData = {
-        service_type: formData.get('serviceType') as string,
-        full_name: formData.get('fullName') as string,
-        email: formData.get('email') as string,
-        subject: formData.get('subject') as string,
-        document_type: formData.get('documentType') as string,
-        instructions: formData.get('instructions') as string || '',
-        pages: parseInt(formData.get('pages') as string),
-        deadline: formData.get('deadline') as string,
-        reference_style: formData.get('referenceStyle') as string,
-        has_files: formData.get('hasFiles') === 'true',
-        session_id: formData.get('sessionId') as string,
-      }
+// Get customer country from IP
+const clientIP = getClientIP(request)
+const country = await getCountryFromIP(clientIP)
+console.log(`🌍 Customer location: ${country} (IP: ${clientIP})`)
+
+// Extract form fields
+const orderData = {
+  service_type: formData.get('serviceType') as string,
+  full_name: formData.get('fullName') as string,
+  email: formData.get('email') as string,
+  subject: formData.get('subject') as string,
+  document_type: formData.get('documentType') as string,
+  instructions: formData.get('instructions') as string || '',
+  pages: parseInt(formData.get('pages') as string),
+  deadline: formData.get('deadline') as string,
+  reference_style: formData.get('referenceStyle') as string,
+  has_files: formData.get('hasFiles') === 'true',
+  session_id: formData.get('sessionId') as string,
+  country: country,
+}
 
       console.log('📦 Order data extracted:', orderData)
 
@@ -148,6 +157,59 @@ export async function POST(request: NextRequest) {
         console.log('ℹ️ No files to upload or empty files')
       }
 
+      // Send emails (don't break order if emails fail)
+      try {
+        console.log('📧 Sending confirmation emails...')
+        
+        const checkoutUrl = `${request.headers.get('origin')}/checkout?orderId=${order.id}`
+        
+        const emailData = {
+            orderId: order.id,
+            customerName: orderData.full_name,
+            customerEmail: orderData.email,
+            customerCountry: orderData.country,
+          serviceType: orderData.service_type,
+          subject: orderData.subject,
+          documentType: orderData.document_type,
+          pages: orderData.pages,
+          deadline: orderData.deadline,
+          totalPrice: pricing.totalPrice,
+          basePrice: pricing.basePrice,
+          savings: pricing.savings,
+          rushFee: pricing.rushFee,
+          instructions: orderData.instructions,
+          referenceStyle: orderData.reference_style,
+          hasFiles: orderData.has_files,
+          fileCount: uploadedFiles.length,
+          uploadedFiles: uploadedFiles.map(file => ({
+            fileName: file.file_name,
+            fileUrl: file.r2_url,
+            fileSize: file.file_size
+          })),
+          checkoutUrl: checkoutUrl
+        }
+
+        // Send customer confirmation email
+        const customerEmailResult = await sendCustomerConfirmation(emailData)
+        if (customerEmailResult.success) {
+          console.log('✅ Customer recovery email sent')
+        } else {
+          console.error('❌ Customer email failed:', customerEmailResult.error)
+        }
+
+        // Send admin notification email
+        const adminEmailResult = await sendAdminNotification(emailData)
+        if (adminEmailResult.success) {
+          console.log('✅ Admin pre-order alert sent')
+        } else {
+          console.error('❌ Admin email failed:', adminEmailResult.error)
+        }
+
+      } catch (emailError) {
+        console.error('❌ Email sending failed:', emailError)
+        // Continue with order completion - don't break the flow
+      }
+
       return NextResponse.json({
         success: true,
         order: {
@@ -161,8 +223,14 @@ export async function POST(request: NextRequest) {
       console.log('📄 Processing JSON submission (no files)...')
       
       // Handle JSON submission (no files)
+      // Handle JSON submission (no files)
       const data = await request.json()
       console.log('📦 JSON data received:', data)
+      
+      // Get customer country from IP
+      const clientIP = getClientIP(request)
+      const country = await getCountryFromIP(clientIP)
+      console.log(`🌍 Customer location: ${country} (IP: ${clientIP})`)
       
       // Calculate pricing
       const pricing = calculateEnhancedPricing({
@@ -191,6 +259,7 @@ export async function POST(request: NextRequest) {
           discount_amount: pricing.savings,
           rush_fee: pricing.rushFee,
           session_id: data.sessionId || `session_${Date.now()}`,
+          country: country,
           status: 'pending'
         })
         .select()
@@ -202,6 +271,55 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('✅ Order created (no files):', order.id)
+
+      // Send emails (don't break order if emails fail)
+      try {
+        console.log('📧 Sending confirmation emails...')
+        
+        const checkoutUrl = `${request.headers.get('origin')}/checkout?orderId=${order.id}`
+        
+        const emailData = {
+            orderId: order.id,
+            customerName: data.fullName,
+            customerEmail: data.email,
+            customerCountry: country,
+          serviceType: data.serviceType,
+          subject: data.subject,
+          documentType: data.documentType,
+          pages: data.pages,
+          deadline: data.deadline,
+          totalPrice: pricing.totalPrice,
+          basePrice: pricing.basePrice,
+          savings: pricing.savings,
+          rushFee: pricing.rushFee,
+          instructions: data.instructions,
+          referenceStyle: data.referenceStyle,
+          hasFiles: data.hasFiles,
+          fileCount: 0,
+          uploadedFiles: [],
+          checkoutUrl: checkoutUrl
+        }
+
+        // Send customer confirmation email
+        const customerEmailResult = await sendCustomerConfirmation(emailData)
+        if (customerEmailResult.success) {
+          console.log('✅ Customer recovery email sent')
+        } else {
+          console.error('❌ Customer email failed:', customerEmailResult.error)
+        }
+
+        // Send admin notification email
+        const adminEmailResult = await sendAdminNotification(emailData)
+        if (adminEmailResult.success) {
+          console.log('✅ Admin pre-order alert sent')
+        } else {
+          console.error('❌ Admin email failed:', adminEmailResult.error)
+        }
+
+      } catch (emailError) {
+        console.error('❌ Email sending failed:', emailError)
+        // Continue with order completion - don't break the flow
+      }
 
       return NextResponse.json({
         success: true,
