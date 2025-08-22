@@ -1,4 +1,3 @@
-// src/components/conversion/ExitIntentModal.tsx
 'use client'
 
 import { useState } from 'react'

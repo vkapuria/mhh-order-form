@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   description: "Get expert help with essays, research papers, editing, and presentations. 2,847+ satisfied students. 4.9/5 rating. On-time delivery guaranteed. Professional academic support from PhD writers.",
   keywords: "academic writing, essay help, research papers, editing services, presentations, homework help, professional writers",
   authors: [{ name: "Academic Excellence Hub" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   openGraph: {
     title: "Academic Excellence Hub - Professional Academic Services",
@@ -32,6 +31,13 @@ export const metadata: Metadata = {
   }
 };
 
+// Move viewport to separate export
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#8800e9',
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,7 +47,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" />
-        <meta name="theme-color" content="#8800e9" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-purple-50 via-white to-teal-50`}

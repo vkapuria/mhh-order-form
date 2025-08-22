@@ -28,9 +28,10 @@ export default function FormWrapper() {
     fullName: '',
     instructions: '',
     referenceStyle: '',
-    files: [],
+    files: [],  // Make sure this is here
     hasFiles: false
   })
+  
 
   // Hooks
   const { saveFormData, getStoredFormData, clearStoredData } = useFormPersistence()
@@ -55,9 +56,7 @@ export default function FormWrapper() {
   // Load saved data on mount
   useEffect(() => {
     const stored = getStoredFormData()
-    if (stored) {
-      console.log('Found saved form data:', stored.sessionId)
-    }
+    // Silent check - no console.log
   }, [getStoredFormData])
 
   const markStepCompleted = (step: FormStep) => {
@@ -90,7 +89,7 @@ export default function FormWrapper() {
     setFormData({ ...formData, [field]: value })
   }
 
-  const handleDetailsChange = (field: string, value: string | number | boolean) => {
+  const handleDetailsChange = (field: string, value: string | number | boolean | File[]) => {
     setFormData({ ...formData, [field]: value })
   }
 
@@ -98,16 +97,170 @@ export default function FormWrapper() {
     setIsSubmitting(true)
     
     try {
-      console.log('Submitting form data:', formData)
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // DEBUG: Check what we're submitting
+      console.log('🔍 Form submission debug:', {
+        hasFiles: formData.hasFiles,
+        filesCount: formData.files?.length,
+        fileNames: formData.files?.map(f => f.name),
+        fileSizes: formData.files?.map(f => f.size),
+        allFormData: formData
+      })
       
-      clearStoredData()
-      markStepCompleted('details')
+      // Check if we have files to upload
+      const hasFiles = formData.hasFiles && formData.files && formData.files.length > 0
       
-      alert('🎉 Order submitted successfully! You will receive a confirmation email shortly.')
+      console.log('📎 Has files to upload?', hasFiles)
+      
+      if (hasFiles) {
+        console.log('📤 Preparing FormData with files...')
+        
+        // Use FormData for file upload
+        const submitData = new FormData()
+        
+        // Add all form fields
+        submitData.append('serviceType', formData.serviceType || '')
+        submitData.append('fullName', formData.fullName || '')
+        submitData.append('email', formData.email || '')
+        submitData.append('subject', formData.subject || '')
+        submitData.append('documentType', formData.documentType || '')
+        submitData.append('instructions', formData.instructions || '')
+        submitData.append('pages', String(formData.pages || 0))
+        submitData.append('deadline', formData.deadline || '')
+        submitData.append('referenceStyle', formData.referenceStyle || '')
+        submitData.append('hasFiles', String(formData.hasFiles || false))
+        submitData.append('sessionId', `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
+        
+        // Add files
+        if (formData.files) {
+          console.log(`📎 Adding ${formData.files.length} files to FormData`)
+          formData.files.forEach((file, index) => {
+            console.log(`  File ${index + 1}: ${file.name} (${file.size} bytes)`)
+            submitData.append('files', file)
+          })
+        }
+        
+        // Log FormData contents
+        console.log('📋 FormData contents:')
+        for (let [key, value] of submitData.entries()) {
+          if (value instanceof File) {
+            console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`)
+          } else {
+            console.log(`  ${key}: ${value}`)
+          }
+        }
+        
+        console.log('🚀 Sending request with files...')
+        
+        // Submit with files
+        const response = await fetch('/api/submit-order', {
+          method: 'POST',
+          body: submitData,
+          // DO NOT set Content-Type header - browser will set it with boundary
+        })
+        
+        console.log('📨 Response status:', response.status)
+        
+        const result = await response.json()
+        console.log('📦 Response data:', result)
+        
+        // In handleFormSubmit, after successful submission:
+
+        if (result.success) {
+          clearStoredData()
+          
+          // Store order data for checkout page
+          const checkoutData = {
+            id: result.order.id,
+            fullName: formData.fullName,
+            email: formData.email,
+            serviceType: formData.serviceType,
+            subject: formData.subject,
+            documentType: formData.documentType,
+            instructions: formData.instructions,
+            pages: formData.pages,
+            deadline: formData.deadline,
+            referenceStyle: formData.referenceStyle,
+            totalPrice: result.order.total_price,
+            basePrice: result.order.base_price,
+            discountAmount: result.order.discount_amount,
+            rushFee: result.order.rush_fee,
+            attachments: []  // No files in this case
+          }
+          
+          // Save to localStorage for checkout page
+          localStorage.setItem('checkout_order', JSON.stringify(checkoutData))
+          
+          // Redirect to checkout
+          window.location.href = `/checkout?orderId=${result.order.id}`
+        } else {
+          throw new Error(result.error || 'Submission failed')
+        }
+        
+      } else {
+        console.log('📄 No files - using JSON submission')
+        
+        // No files - use JSON submission
+        const submitData = {
+          serviceType: formData.serviceType,
+          fullName: formData.fullName,
+          email: formData.email,
+          subject: formData.subject,
+          documentType: formData.documentType,
+          instructions: formData.instructions,
+          pages: formData.pages,
+          deadline: formData.deadline,
+          referenceStyle: formData.referenceStyle,
+          hasFiles: false,
+          sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        }
+  
+        console.log('📤 Sending JSON:', submitData)
+  
+        const response = await fetch('/api/submit-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submitData),
+        })
+        
+        const result = await response.json()
+        console.log('📦 Response:', result)
+        
+        if (result.success) {
+          clearStoredData()
+          
+          // Store order data for checkout page
+          const checkoutData = {
+            id: result.order.id,
+            fullName: formData.fullName,
+            email: formData.email,
+            serviceType: formData.serviceType,
+            subject: formData.subject,
+            documentType: formData.documentType,
+            instructions: formData.instructions,
+            pages: formData.pages,
+            deadline: formData.deadline,
+            referenceStyle: formData.referenceStyle,
+            totalPrice: result.order.total_price,
+            basePrice: result.order.base_price,
+            discountAmount: result.order.discount_amount,
+            rushFee: result.order.rush_fee,
+            attachments: []  // No files in this case
+          }
+          
+          // Save to localStorage for checkout page
+          localStorage.setItem('checkout_order', JSON.stringify(checkoutData))
+          
+          // Redirect to checkout
+          window.location.href = `/checkout?orderId=${result.order.id}`
+        } else {
+          throw new Error(result.error || 'Submission failed')
+        }
+      }
       
     } catch (error) {
-      console.error('Submission error:', error)
+      console.error('❌ Submission error:', error)
       alert('❌ Error submitting order. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -119,7 +272,6 @@ export default function FormWrapper() {
       setFormData({ ...formData, email })
     }
     saveFormData({ ...formData, email }, currentStep, completedSteps)
-    console.log('Saving progress for email:', email)
   }
 
   const handleRestoreForm = (savedData: any) => {
@@ -144,7 +296,7 @@ export default function FormWrapper() {
       case 'contact':
         return (
           <EmailCapture
-            serviceType={formData.serviceType}  // ADD THIS - pass service type
+            serviceType={formData.serviceType}
             fullName={formData.fullName || ''}
             email={formData.email || ''}
             onChange={(field, value) => setFormData({ ...formData, [field]: value })}
@@ -157,7 +309,7 @@ export default function FormWrapper() {
         return (
           <AssignmentDetails
             serviceType={formData.serviceType!}
-            previousData={{  // ADD THIS - pass previous selections
+            previousData={{
               serviceType: formData.serviceType || '',
               fullName: formData.fullName || '',
               email: formData.email || ''
@@ -173,29 +325,31 @@ export default function FormWrapper() {
           />
         )
       
-      case 'details':
-        return (
-          <FinalDetails
-            previousData={{  // ADD THIS - pass all previous selections
-              serviceType: formData.serviceType || '',
-              fullName: formData.fullName || '',
-              email: formData.email || '',
-              subject: formData.subject || '',
-              documentType: formData.documentType || '',
-              instructions: formData.instructions || ''
-            }}
-            data={{
-              deadline: formData.deadline || '',
-              referenceStyle: formData.referenceStyle || '',
-              pages: formData.pages || 0,
-              hasFiles: formData.hasFiles || false
-            }}
-            onChange={handleDetailsChange}
-            onSubmit={handleFormSubmit}
-            onBack={() => goToStep('assignment')}
-            isSubmitting={isSubmitting}
-          />
-        )
+        case 'details':
+          return (
+            <FinalDetails
+              previousData={{
+                serviceType: formData.serviceType || '',
+                fullName: formData.fullName || '',
+                email: formData.email || '',
+                subject: formData.subject || '',
+                documentType: formData.documentType || '',
+                instructions: formData.instructions || ''
+              }}
+              data={{
+                deadline: formData.deadline || '',
+                referenceStyle: formData.referenceStyle || '',
+                pages: formData.pages || 0,
+                hasFiles: formData.hasFiles || false,
+                files: formData.files || []  // ADD THIS
+              }}
+              onChange={handleDetailsChange}
+              onSubmit={handleFormSubmit}
+              onBack={() => goToStep('assignment')}
+              isSubmitting={isSubmitting}
+            />
+          )
+        
       
       default:
         return null

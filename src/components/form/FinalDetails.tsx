@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
+import FileUpload from './FileUpload'  // ADD THIS IMPORT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   ClockIcon,
@@ -23,6 +24,7 @@ interface FinalDetailsProps {
     referenceStyle: string
     pages: number
     hasFiles: boolean
+    files?: File[]  // ADD THIS
   }
   previousData?: {
     serviceType: string
@@ -32,7 +34,7 @@ interface FinalDetailsProps {
     documentType: string
     instructions: string
   }
-  onChange: (field: string, value: string | number | boolean) => void
+  onChange: (field: string, value: string | number | boolean | File[]) => void  // UPDATE THIS
   onSubmit: () => void
   onBack: () => void
   isSubmitting?: boolean
@@ -225,7 +227,7 @@ export default function FinalDetails({
             </div>
           </div>
 
-          {/* ROW 2: Pages + File Attachment */}
+          {/* ROW 2: Pages + File Attachment Toggle */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             
             {/* LEFT: Pages */}
@@ -310,10 +312,23 @@ export default function FinalDetails({
               </div>
               
               <p className="text-xs text-gray-500">
-                {data.hasFiles ? "You'll upload files after order" : "Please select Yes or No"}
+                {data.hasFiles ? "Upload your files below" : "No files needed"}
               </p>
             </div>
           </div>
+
+          {/* FILE UPLOAD SECTION - Shows when hasFiles is true */}
+          {data.hasFiles && (
+            <div className="pt-4">
+              <FileUpload
+                files={data.files || []}
+                onChange={(files) => onChange('files', files)}
+                maxFiles={5}
+                maxSizePerFile={10}
+                acceptedTypes={['pdf', 'doc', 'docx', 'txt', 'rtf', 'png', 'jpg', 'jpeg']}
+              />
+            </div>
+          )}
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">

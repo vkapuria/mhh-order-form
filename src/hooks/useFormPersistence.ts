@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import { OrderFormData } from '@/types'
 
 const STORAGE_KEY = 'homework_order_form'
@@ -15,12 +15,10 @@ interface StoredFormData {
 }
 
 export function useFormPersistence() {
-  // Generate unique session ID
   const generateSessionId = useCallback(() => {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }, [])
 
-  // Save form data to localStorage
   const saveFormData = useCallback((
     formData: Partial<OrderFormData>,
     currentStep: string,
@@ -40,18 +38,12 @@ export function useFormPersistence() {
       
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore))
       
-      // Track in analytics (you can replace with your analytics)
-      console.log('Form progress saved:', {
-        sessionId,
-        step: currentStep,
-        progress: completedSteps.length
-      })
+      // Removed console.log here
     } catch (error) {
-      console.error('Failed to save form data:', error)
+      // Silent fail for localStorage
     }
   }, [generateSessionId])
 
-  // Load form data from localStorage
   const getStoredFormData = useCallback((): StoredFormData | null => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -59,7 +51,6 @@ export function useFormPersistence() {
 
       const parsedData: StoredFormData = JSON.parse(stored)
       
-      // Check if data has expired
       const hoursAgo = (Date.now() - parsedData.timestamp) / (1000 * 60 * 60)
       if (hoursAgo > EXPIRY_HOURS) {
         localStorage.removeItem(STORAGE_KEY)
@@ -68,21 +59,18 @@ export function useFormPersistence() {
 
       return parsedData
     } catch (error) {
-      console.error('Failed to load form data:', error)
       return null
     }
   }, [])
 
-  // Clear stored data
   const clearStoredData = useCallback(() => {
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch (error) {
-      console.error('Failed to clear form data:', error)
+      // Silent fail
     }
   }, [])
 
-  // Check if form was abandoned
   const getAbandonmentData = useCallback(() => {
     const stored = getStoredFormData()
     if (!stored) return null
