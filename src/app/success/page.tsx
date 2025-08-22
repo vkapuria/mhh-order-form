@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,8 @@ import {
   ShareIcon
 } from '@heroicons/react/24/outline'
 
-export default function SuccessPage() {
+// Separate component for the search params logic
+function SuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
   const [orderData, setOrderData] = useState<any>(null)
@@ -135,7 +136,7 @@ export default function SuccessPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">Expert Assignment (Within 2 Hours)</h4>
-                    <p className="text-sm text-gray-600">We'll match you with a qualified expert in your subject area and begin work immediately.</p>
+                    <p className="text-sm text-gray-600">We&apos;ll match you with a qualified expert in your subject area and begin work immediately.</p>
                   </div>
                 </div>
 
@@ -145,7 +146,7 @@ export default function SuccessPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">Progress Updates</h4>
-                    <p className="text-sm text-gray-600">You'll receive email updates as we work on your assignment.</p>
+                    <p className="text-sm text-gray-600">You&apos;ll receive email updates as we work on your assignment.</p>
                   </div>
                 </div>
 
@@ -155,7 +156,7 @@ export default function SuccessPage() {
                   </div>
                   <div>
                     <h4 className="font-medium">Quality Review & Delivery</h4>
-                    <p className="text-sm text-gray-600">Before your deadline, you'll receive the completed work with quality assurance.</p>
+                    <p className="text-sm text-gray-600">Before your deadline, you&apos;ll receive the completed work with quality assurance.</p>
                   </div>
                 </div>
               </div>
@@ -233,7 +234,7 @@ export default function SuccessPage() {
                 ))}
               </div>
               <p className="text-sm italic text-gray-600 mb-3">
-                "DoMyHomework helped me get my essay done perfectly and on time. The quality was amazing and my professor loved it!"
+                &quot;DoMyHomework helped me get my essay done perfectly and on time. The quality was amazing and my professor loved it!&quot;
               </p>
               <p className="text-xs text-gray-500">- Sarah M., Psychology Student</p>
             </Card>
@@ -283,5 +284,18 @@ export default function SuccessPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Main component with Suspense wrapper
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }
