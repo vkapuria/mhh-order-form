@@ -28,187 +28,277 @@ interface PricingParams {
   documentType: string
 }
 
+// ✅ Perfect pricing function - ensures only .00 and .50 decimals
+function roundPrice(price: number): number {
+  const wholePart = Math.floor(price)
+  const decimalPart = price - wholePart
+  if (decimalPart === 0 || decimalPart === 0.5) return price
+  if (decimalPart > 0 && decimalPart < 0.5) return wholePart + 0.5
+  if (decimalPart > 0.5 && decimalPart < 1) return wholePart + 1
+  return price
+}
+
+// ✅ Practical workload limits (your original smart logic)
+const practicalLimits: Record<string, number> = {
+  "0.5": 3,  // 12 hours: max 3 pages
+  "1": 6,    // 24 hours: max 6 pages  
+  "2": 10,   // 48 hours: max 10 pages
+  "3": 15    // 3 days: max 15 pages
+}
+
+// ✅ Special pricing rules (your original logic)
+const specialPricingRules = {
+  smallOrder: 3,   // ≤3 pages = small order
+  mediumOrder: 8   // 4-8 pages = medium order
+}
+
+// ✅ Smart rush fee logic - capacity based (your original)
+function exceedsPracticalLimits(pages: number, deadline: string): boolean {
+  const deadlineNum = Number(deadline)
+  if (deadlineNum > 3) return false // No capacity rush fee for 4+ days
+  
+  const maxPages = practicalLimits[deadline] || Infinity
+  return pages > maxPages
+}
+
+// ✅ Capacity-based rush fee calculation (your original)
+function calculateCapacityRushFeePercentage(pages: number, deadline: string): number {
+  if (!exceedsPracticalLimits(pages, deadline)) return 0
+  
+  const deadlineNum = Number(deadline)
+  const maxPages = practicalLimits[deadline] || pages
+  const excessRatio = (pages - maxPages) / maxPages
+  
+  let rushPercentage = 25 + (excessRatio * 25)
+  return Math.min(50, Math.ceil(rushPercentage))
+}
+
 export function calculateEnhancedPricing({
   serviceType,
   pages,
   deadline,
   documentType
 }: PricingParams): EnhancedPricingData {
+  
+  console.log("🔍 === PRICING DEBUG START ===");
+  console.log(`📝 INPUT: ${pages} pages, ${deadline} days, ${serviceType}, ${documentType}`);
+  
+  // Handle empty/invalid inputs
   if (!pages || !deadline) {
+    console.log("❌ Invalid input - returning zeros");
     return {
-      basePrice: 0,
-      totalPrice: 0,
-      savings: 0,
-      discountPercentage: 0,
-      discountTier: null,
-      pricePerPage: 0,
-      rushFee: 0,
-      rushFeePercentage: 0,
-      isRushOrder: false,
-      competitorPrice: 0,
-      competitorSavings: 0,
-      nextDiscountAt: null,
-      nextDiscountPercentage: null,
-      bulkIncentiveMessage: null,
-      urgencyDiscount: 0,
-      urgencyMessage: null,
-      timeRemaining: null
+      basePrice: 0, totalPrice: 0, savings: 0, discountPercentage: 0, discountTier: null,
+      pricePerPage: 0, rushFee: 0, rushFeePercentage: 0, isRushOrder: false,
+      competitorPrice: 0, competitorSavings: 0, nextDiscountAt: null, nextDiscountPercentage: null,
+      bulkIncentiveMessage: null, urgencyDiscount: 0, urgencyMessage: null, timeRemaining: null
     }
   }
 
-  // Base pricing per service type
+  // 1️⃣ BASE PRICING per service type
   let basePricePerPage: number
   if (serviceType === 'writing') {
     basePricePerPage = 14
   } else if (serviceType === 'editing') {
     basePricePerPage = 9
   } else if (serviceType === 'presentation') {
-    basePricePerPage = 10  // $10 per slide
+    basePricePerPage = 10
   } else {
-    basePricePerPage = 14 // fallback
+    basePricePerPage = 14 // Default
   }
   
-  // Document type adjustments
+  console.log(`💰 Base rate per page: $${basePricePerPage} (service: ${serviceType})`);
+  
+  // 2️⃣ DOCUMENT TYPE adjustments
+  const originalRate = basePricePerPage;
   if (documentType === 'dissertation' || documentType === 'thesis') {
-    basePricePerPage *= 1.3
+    basePricePerPage = roundPrice(basePricePerPage * 1.3)
+    console.log(`📚 Document adjustment: ${documentType} → $${originalRate} × 1.3 = $${basePricePerPage}`);
   } else if (serviceType === 'presentation' && documentType === 'pitch_deck') {
-    basePricePerPage *= 1.2 // Premium for pitch decks
+    basePricePerPage = roundPrice(basePricePerPage * 1.2)
+    console.log(`📊 Document adjustment: ${documentType} → $${originalRate} × 1.2 = $${basePricePerPage}`);
+  } else {
+    console.log(`📄 No document adjustment for: ${documentType}`);
   }
   
-  // Deadline multipliers
-  const deadlineMultipliers: Record<string, number> = {
-    '14': 0.85, // 15% discount
-    '10': 0.9,  // 10% discount
-    '7': 1.0,   // Standard rate
-    '5': 1.05,  // 5% premium
-    '3': 1.1,   // 10% premium
-    '2': 1.2,   // 20% premium
-    '1': 1.3,   // 30% premium
-  }
-  
-  const deadlineMultiplier = deadlineMultipliers[deadline] || 1.0
-  const adjustedPricePerPage = basePricePerPage * deadlineMultiplier
-  
-  // Bulk discounts - different thresholds for presentations
+  // 🎯 TRUE BASE PRICE (never changes - this is what customer sees as base)
+  const trueBasePrice = roundPrice(basePricePerPage * pages)
+  console.log(`🎯 TRUE BASE PRICE: ${pages} × $${basePricePerPage} = $${trueBasePrice}`);
+
+  // 3️⃣ BULK DISCOUNTS (only for 5+ pages)
   let discountPercentage = 0
   let discountTier: string | null = null
   
   if (serviceType === 'presentation') {
-    // Presentation bulk discounts (slides)
     if (pages >= 20) {
-      discountPercentage = 20
-      discountTier = 'Premium Saver'
+      discountPercentage = 20; discountTier = 'Premium Saver'
     } else if (pages >= 15) {
-      discountPercentage = 15
-      discountTier = 'Value Pro'
+      discountPercentage = 15; discountTier = 'Value Pro'
     } else if (pages >= 10) {
-      discountPercentage = 10
-      discountTier = 'Smart Saver'
+      discountPercentage = 10; discountTier = 'Smart Saver'
     }
   } else {
-    // Writing/Editing bulk discounts (pages)
+    // Regular services - only start discounts at 5+ pages
     if (pages >= 15) {
-      discountPercentage = 20
-      discountTier = 'Premium Saver'
+      discountPercentage = 20; discountTier = 'Premium Saver'
     } else if (pages >= 10) {
-      discountPercentage = 15
-      discountTier = 'Value Pro'
-    } else if (pages >= 5) {
-      discountPercentage = 10
-      discountTier = 'Smart Saver'
+      discountPercentage = 15; discountTier = 'Value Pro'
+    } else if (pages >= 5) { 
+      discountPercentage = 10; discountTier = 'Smart Saver'
     }
+    // No discount for pages < 5
   }
   
-  // Calculate next discount incentive - NO pushy suggestions for presentations
+  const bulkDiscount = roundPrice(trueBasePrice * (discountPercentage / 100))
+  const priceAfterDiscount = roundPrice(trueBasePrice - bulkDiscount)
+  
+  console.log(`💎 BULK DISCOUNT CHECK:`);
+  console.log(`   Pages: ${pages}, Service: ${serviceType}`);
+  console.log(`   Discount: ${discountPercentage}% (${discountTier || 'none'})`);
+  console.log(`   Discount amount: $${trueBasePrice} × ${discountPercentage}% = $${bulkDiscount}`);
+  console.log(`   After discount: $${trueBasePrice} - $${bulkDiscount} = $${priceAfterDiscount}`);
+
+  // 4️⃣ DEADLINE MULTIPLIERS with special rules
+  let deadlineMultiplier = 1.0
+  const deadlineNum = Number(deadline)
+  
+  console.log(`⏰ DEADLINE ANALYSIS:`);
+  console.log(`   Deadline: ${deadlineNum} days`);
+  console.log(`   Pages: ${pages} (small ≤${specialPricingRules.smallOrder}, medium ≤${specialPricingRules.mediumOrder})`);
+  
+  // Apply special pricing rules
+  if (pages <= specialPricingRules.smallOrder) {
+    deadlineMultiplier = 1.0
+    console.log(`   🟢 SMALL ORDER RULE: No deadline adjustment (${pages} ≤ ${specialPricingRules.smallOrder})`);
+  } else if (pages <= specialPricingRules.mediumOrder && deadlineNum >= 2) {
+    deadlineMultiplier = 1.0
+    console.log(`   🟡 MEDIUM ORDER RULE: No deadline adjustment (${pages} ≤ ${specialPricingRules.mediumOrder} && ${deadlineNum} ≥ 2)`);
+  } else {
+    // Normal deadline multipliers
+    const originalMultiplier = deadlineMultiplier;
+    switch(deadlineNum) {
+      case 14: deadlineMultiplier = 0.85; break // 15% discount
+      case 10: deadlineMultiplier = 0.9; break  // 10% discount
+      case 7: deadlineMultiplier = 1.0; break   // Standard rate
+      case 5: deadlineMultiplier = 1.05; break  // 5% premium
+      case 3: deadlineMultiplier = 1.1; break   // 10% premium
+      case 2: deadlineMultiplier = 1.2; break   // 20% premium
+      case 1: deadlineMultiplier = 1.3; break   // 30% premium
+      case 0.5: deadlineMultiplier = 1.6; break // 60% premium
+      default: deadlineMultiplier = 1.0
+    }
+    console.log(`   🔴 NORMAL DEADLINE RULE: ${originalMultiplier} → ${deadlineMultiplier} (${(deadlineMultiplier - 1) * 100}% adjustment)`);
+  }
+
+  // 5️⃣ CALCULATE RUSH CHARGES
+  let totalRushCharges = 0
+  let rushPercentage = 0
+  
+  console.log(`🚨 RUSH CHARGES CALCULATION:`);
+  
+  // Only apply rush charges if there are premiums
+  if (deadlineMultiplier !== 1.0 || exceedsPracticalLimits(pages, deadline)) {
+    
+    // Deadline premium (applied to price after bulk discount)
+    let deadlinePremium = 0
+    if (deadlineMultiplier > 1.0) {
+      const premiumMultiplier = deadlineMultiplier - 1.0 // e.g., 1.3 - 1.0 = 0.3 (30%)
+      deadlinePremium = roundPrice(priceAfterDiscount * premiumMultiplier)
+      console.log(`   💥 Deadline Premium: $${priceAfterDiscount} × ${premiumMultiplier} = $${deadlinePremium}`);
+    } else if (deadlineMultiplier < 1.0) {
+      // This is actually a discount (longer deadlines)
+      const discountMultiplier = 1.0 - deadlineMultiplier // e.g., 1.0 - 0.85 = 0.15 (15% off)
+      deadlinePremium = -roundPrice(priceAfterDiscount * discountMultiplier)
+      console.log(`   💚 Deadline Discount: $${priceAfterDiscount} × ${discountMultiplier} = ${Math.abs(deadlinePremium)} (negative = discount)`);
+    } else {
+      console.log(`   ⚪ No deadline premium (multiplier = 1.0)`);
+    }
+    
+    // Capacity rush fee (your original workload-based logic)
+    const capacityRushPercentage = calculateCapacityRushFeePercentage(pages, deadline)
+    const baseForCapacityFee = priceAfterDiscount + Math.max(0, deadlinePremium);
+    const capacityRushFee = roundPrice(baseForCapacityFee * (capacityRushPercentage / 100))
+    
+    console.log(`   🏭 Capacity Check:`);
+    console.log(`     Exceeds limits? ${exceedsPracticalLimits(pages, deadline)}`);
+    console.log(`     Capacity rush %: ${capacityRushPercentage}%`);
+    console.log(`     Base for capacity fee: $${baseForCapacityFee}`);
+    console.log(`     Capacity rush fee: $${baseForCapacityFee} × ${capacityRushPercentage}% = $${capacityRushFee}`);
+    
+    // Combine all rush charges
+    totalRushCharges = roundPrice(deadlinePremium + capacityRushFee)
+    console.log(`   🎯 TOTAL RUSH: $${deadlinePremium} + $${capacityRushFee} = $${totalRushCharges}`);
+    
+    // Calculate percentage based on price after discount
+    if (priceAfterDiscount > 0) {
+      rushPercentage = Math.round((Math.abs(totalRushCharges) / priceAfterDiscount) * 100)
+      console.log(`   📊 Rush percentage: ${Math.abs(totalRushCharges)} / ${priceAfterDiscount} = ${rushPercentage}%`);
+    }
+  } else {
+    console.log(`   ✅ No rush charges needed`);
+  }
+
+  // 🗑️ REMOVED: All weekend special code - GONE!
+
+  // 6️⃣ FINAL PRICE CALCULATION (NO MORE WEEKEND CRAP!)
+  const finalPrice = roundPrice(priceAfterDiscount + totalRushCharges)
+  console.log(`🏁 FINAL CALCULATION:`);
+  console.log(`   $${priceAfterDiscount} (after discount) + $${totalRushCharges} (rush) = $${finalPrice}`);
+
+  // 7️⃣ NEXT DISCOUNT INCENTIVE
   let nextDiscountAt: number | null = null
   let nextDiscountPercentage: number | null = null
-  let bulkIncentiveMessage: string | null = null
   
   if (serviceType !== 'presentation') {
-    // Only show bulk incentives for writing/editing
     if (pages < 5) {
-      nextDiscountAt = 5
-      nextDiscountPercentage = 10
+      nextDiscountAt = 5; nextDiscountPercentage = 10
     } else if (pages < 10) {
-      nextDiscountAt = 10
-      nextDiscountPercentage = 15
+      nextDiscountAt = 10; nextDiscountPercentage = 15
     } else if (pages < 15) {
-      nextDiscountAt = 15
-      nextDiscountPercentage = 20
+      nextDiscountAt = 15; nextDiscountPercentage = 20
     }
   }
   
-  // Rush fees for urgent deadlines
-  const deadlineNum = Number(deadline)
-  let rushFeePercentage = 0
-  let isRushOrder = false
-  
-  if (deadlineNum <= 3) {
-    isRushOrder = true
-    if (deadlineNum === 1) rushFeePercentage = 30      // 24 hours
-    else if (deadlineNum === 2) rushFeePercentage = 20 // 48 hours  
-    else if (deadlineNum === 3) rushFeePercentage = 15 // 3 days
-  }
-  
-  // Apply discounts
-  const discountMultiplier = 1 - (discountPercentage / 100)
-  let subtotal = adjustedPricePerPage * pages * discountMultiplier
-  
-  // Add rush fee
-  const rushFee = subtotal * (rushFeePercentage / 100)
-  
-  // Dynamic urgency discount (limited time offer)
-  const now = new Date()
-  const isWeekend = now.getDay() === 0 || now.getDay() === 6
-  let urgencyDiscount = 0
-  let urgencyMessage: string | null = null
-  let timeRemaining: string | null = null
-  
-  const minPagesForDiscount = serviceType === 'presentation' ? 5 : 3
-  if (isWeekend && pages >= minPagesForDiscount) {
-    urgencyDiscount = subtotal * 0.05 // 5% weekend discount
-    urgencyMessage = "🎉 Weekend Special: 5% Extra Discount!"
-    timeRemaining = "Ends Monday at midnight"
-  }
-  
-  // Calculate final price
-  const finalPrice = subtotal + rushFee - urgencyDiscount
-  const basePrice = basePricePerPage * pages
-  const totalSavings = basePrice - finalPrice + urgencyDiscount
-  
-  // Competitor comparison (simulate competitor pricing)
+  // 8️⃣ COMPETITOR COMPARISON
   let competitorMultiplier: number
   if (serviceType === 'presentation') {
-    competitorMultiplier = 1.6 // PowerPoint freelancers charge 60% more
+    competitorMultiplier = 1.6
   } else if (serviceType === 'editing') {
-    competitorMultiplier = 1.3 // Editors charge 30% more
+    competitorMultiplier = 1.3
   } else {
-    competitorMultiplier = 1.4 // Writers charge 40% more
+    competitorMultiplier = 1.4
   }
   
-  const competitorPrice = basePrice * competitorMultiplier
-  const competitorSavings = competitorPrice - finalPrice
-  
-  // Determine price per unit label
-  const finalPricePerUnit = finalPrice / pages
-  
-  return {
-    basePrice: Math.round(basePrice * 100) / 100,
-    totalPrice: Math.round(finalPrice * 100) / 100,
-    savings: Math.round(totalSavings * 100) / 100,
-    discountPercentage,
-    discountTier,
-    pricePerPage: Math.round(finalPricePerUnit * 100) / 100,
-    rushFee: Math.round(rushFee * 100) / 100,
-    rushFeePercentage,
-    isRushOrder,
-    competitorPrice: Math.round(competitorPrice * 100) / 100,
-    competitorSavings: Math.round(competitorSavings * 100) / 100,
-    nextDiscountAt,
-    nextDiscountPercentage,
-    bulkIncentiveMessage,
-    urgencyDiscount: Math.round(urgencyDiscount * 100) / 100,
-    urgencyMessage,
-    timeRemaining
+  const competitorPrice = roundPrice(trueBasePrice * competitorMultiplier)
+  const competitorSavings = roundPrice(Math.max(0, competitorPrice - finalPrice))
+
+  // 🎯 CLEAN RETURN DATA (NO WEEKEND GARBAGE!)
+  const result = {
+    basePrice: trueBasePrice,                    
+    totalPrice: finalPrice,                      
+    savings: bulkDiscount,                       
+    discountPercentage,                          
+    discountTier,                                
+    pricePerPage: roundPrice(finalPrice / pages),
+    rushFee: totalRushCharges,                   
+    rushFeePercentage: rushPercentage,           
+    isRushOrder: totalRushCharges > 0,           
+    competitorPrice: competitorPrice,            
+    competitorSavings: competitorSavings,        
+    nextDiscountAt,                              
+    nextDiscountPercentage,                      
+    bulkIncentiveMessage: null,                  
+    urgencyDiscount: 0,        // 🗑️ Always 0 - no more weekend BS
+    urgencyMessage: null,      // 🗑️ Always null
+    timeRemaining: null        // 🗑️ Always null
   }
+  
+  console.log(`📋 FINAL RETURN VALUES:`);
+  console.log(`   basePrice: $${result.basePrice}`);
+  console.log(`   savings: $${result.savings}`);
+  console.log(`   rushFee: $${result.rushFee}`);
+  console.log(`   totalPrice: $${result.totalPrice}`);
+  console.log(`   pricePerPage: $${result.pricePerPage}`);
+  console.log(`🔍 === PRICING DEBUG END ===`);
+  
+  return result;
 }

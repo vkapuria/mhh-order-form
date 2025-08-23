@@ -372,23 +372,23 @@ export default function FormWrapper() {
 
         {/* RIGHT SIDE: 40% width, gray background */}
         <div className="lg:col-span-2 bg-gray-100 min-h-screen">
-          <div className="px-6 py-8">
+          <div className="px-12 py-8">
             <div className="sticky top-8">
-              <PricingSidebar
-                formData={{
-                  serviceType: formData.serviceType,
-                  email: formData.email || '',
-                  subject: formData.subject || '',
-                  documentType: formData.documentType || '',
-                  pages: formData.pages || 0,
-                  deadline: formData.deadline || '',
-                  fullName: formData.fullName || '',
-                  instructions: formData.instructions || '',
-                  referenceStyle: formData.referenceStyle || ''
-                }}
-                currentStep={currentStep}
-                completedSteps={completedSteps}
-              />
+            <PricingSidebar
+  formData={{
+    serviceType: formData.serviceType,
+    email: formData.email || '',
+    subject: formData.subject || '',
+    documentType: formData.documentType || '',
+    pages: formData.pages || 0,
+    deadline: formData.deadline || '',
+    fullName: formData.fullName || '',
+    instructions: formData.instructions || '',
+    referenceStyle: formData.referenceStyle || ''
+  }}
+  currentStep={currentStep as any} // 🔧 TYPE FIX
+  completedSteps={completedSteps}
+/>
             </div>
           </div>
         </div>

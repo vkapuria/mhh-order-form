@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -32,11 +32,6 @@ interface AssignmentDetailsProps {
   onNext: () => void
   onBack: () => void
 }
-
-const writingDocumentChips = ['Essay', 'Research Paper', 'Other']
-const editingDocumentChips = ['Essay', 'Article', 'Thesis']
-const presentationDocumentChips = ['Business', 'Academic', 'Pitch Deck']
-const subjectChips = ['Business', 'Psychology', 'English']
 
 const allDocumentTypes = [
   { value: 'essay', label: 'Essay' },
@@ -76,15 +71,41 @@ export default function AssignmentDetails({
   onNext,
   onBack,
 }: AssignmentDetailsProps) {
-  const documentChips = useMemo(() => {
-    switch (serviceType) {
-      case 'editing': return editingDocumentChips
-      case 'presentation': return presentationDocumentChips
-      default: return writingDocumentChips
-    }
-  }, [serviceType])
-
   const isValid = Boolean(data.subject && data.documentType)
+  const mainFormRef = useRef<HTMLDivElement>(null)
+  
+  // 🎯 DELAYED AUTO-SCROLL FOR PROGRESS VISIBILITY
+  useEffect(() => {
+    if (mainFormRef.current) {
+      setTimeout(() => {
+        const element = mainFormRef.current
+        if (!element) return
+        
+        const elementPosition = element.offsetTop - 20
+        const startPosition = window.pageYOffset
+        const distance = elementPosition - startPosition
+        const duration = 800
+        let start: number | null = null
+
+        function animation(currentTime: number): void {
+          if (start === null) start = currentTime
+          const timeElapsed = currentTime - start
+          const run = easeInOutCubic(timeElapsed, startPosition, distance, duration)
+          window.scrollTo(0, run)
+          if (timeElapsed < duration) requestAnimationFrame(animation)
+        }
+
+        function easeInOutCubic(t: number, b: number, c: number, d: number): number {
+          t /= d / 2
+          if (t < 1) return c / 2 * t * t * t + b
+          t -= 2
+          return c / 2 * (t * t * t + 2) + b
+        }
+
+        requestAnimationFrame(animation)
+      }, 800) // 🎯 LONGER DELAY - Let user see green Steps 1 & 2
+    }
+  }, [])
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -109,12 +130,12 @@ export default function AssignmentDetails({
         </>
       )}
 
-      {/* Main Form Card */}
-      <Card className="p-8 shadow-sm border-gray-200">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">What do you need help with?</h2>
-          <p className="text-gray-600 mt-2">
+      {/* 🎯 MAIN FORM CARD WITH AUTO-SCROLL REF */}
+      <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
+        {/* Header - LEFT ALIGNED */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">What do you need help with?</h2>
+          <p className="text-gray-600 text-base">
             Tell us about your assignment so we can match you with the perfect expert
           </p>
         </div>
@@ -133,8 +154,8 @@ export default function AssignmentDetails({
               </Label>
               
               <Select value={data.subject} onValueChange={(v) => onChange('subject', v)}>
-                <SelectTrigger className="w-full h-10 text-base border-gray-400 focus:border-gray-500">
-                  <SelectValue placeholder="Select or type to search..." />
+                <SelectTrigger className="w-full h-11 text-base border-gray-400 focus:border-gray-500 rounded-xl">
+                  <SelectValue placeholder="Select a subject" />
                 </SelectTrigger>
                 <SelectContent>
                   {allSubjects.map((subj) => (
@@ -145,25 +166,8 @@ export default function AssignmentDetails({
                 </SelectContent>
               </Select>
               
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-600 italic">Popular:</span>
-                {subjectChips.map((chip) => (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => onChange('subject', chip.toLowerCase())}
-                    className={`
-                      px-3 py-1 rounded-full text-sm border transition-all
-                      ${data.subject === chip.toLowerCase()
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                      }
-                    `}
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
+              {/* 🎯 GPT-STYLE SUBTEXT */}
+              <p className="text-xs text-gray-500 -mt-2">We'll match a subject expert.</p>
             </div>
 
             {/* RIGHT: Document Type */}
@@ -174,8 +178,8 @@ export default function AssignmentDetails({
               </Label>
               
               <Select value={data.documentType} onValueChange={(v) => onChange('documentType', v)}>
-                <SelectTrigger className="w-full h-10 text-base border-gray-400 focus:border-gray-500">
-                  <SelectValue placeholder="Select or type to search..." />
+                <SelectTrigger className="w-full h-11 text-base border-gray-400 focus:border-gray-500 rounded-xl">
+                  <SelectValue placeholder="Select a type" />
                 </SelectTrigger>
                 <SelectContent>
                   {allDocumentTypes.map((doc) => (
@@ -186,25 +190,8 @@ export default function AssignmentDetails({
                 </SelectContent>
               </Select>
               
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-gray-600 italic">Popular:</span>
-                {documentChips.map((chip) => (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => onChange('documentType', chip.toLowerCase().replace(' ', '_'))}
-                    className={`
-                      px-3 py-1 rounded-full text-sm border transition-all
-                      ${data.documentType === chip.toLowerCase().replace(' ', '_')
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                      }
-                    `}
-                  >
-                    {chip}
-                  </button>
-                ))}
-              </div>
+              {/* 🎯 GPT-STYLE SUBTEXT */}
+              <p className="text-xs text-gray-500 -mt-2">Essay, report, presentation, and more.</p>
             </div>
           </div>
 
@@ -213,39 +200,46 @@ export default function AssignmentDetails({
             <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
               <PencilSquareIcon className="w-5 h-5" />
               Assignment Instructions
-              <span className="text-sm text-gray-500 font-normal">(Optional)</span>
             </Label>
             
             <Textarea
               value={data.instructions}
               onChange={(e) => onChange('instructions', e.target.value)}
-              placeholder="Provide any specific requirements, topics to cover, sources to use, or other important details..."
-              className="min-h-[120px] text-base border-gray-400 focus:border-gray-500 resize-none"
+              placeholder="Paste your prompt, key points, or professor's rubric here…"
+              className="min-h-[120px] text-base border-gray-400 focus:border-gray-500 resize-none rounded-xl"
               rows={5}
             />
+            
+            {/* 🎯 GPT-STYLE SUBTEXT */}
+            <p className="text-xs text-gray-500 -mt-2">
+              Helpful: formatting, sources, or any must-follow guidance.
+            </p>
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between pt-6">
-            <Button 
-              type="button" 
-              variant="outline" 
+          {/* Navigation - MY CONSISTENT BUTTON STYLING */}
+          <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
+            <Button
+              type="button"
               onClick={onBack}
-              className="px-8 h-10 text-base bg-white text-black border-black hover:bg-gray-50 flex items-center gap-2"
+              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
             >
               <ArrowLeftIcon className="w-4 h-4" />
               Back
             </Button>
-            
             <Button 
               type="submit" 
               disabled={!isValid}
-              className="px-8 h-10 text-base bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 flex items-center gap-2"
+              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
             >
               Continue to Final Details
               <ArrowRightIcon className="w-4 h-4" />
             </Button>
           </div>
+
+          {/* 🎯 GPT-STYLE "WHAT'S NEXT" TEXT */}
+          <p className="text-xs text-gray-500 text-center">
+            You can attach files in the next step.
+          </p>
         </form>
       </Card>
     </div>
