@@ -19,7 +19,9 @@ import {
   LockClosedIcon,
   CreditCardIcon,
   ShieldCheckIcon,
-  PencilIcon
+  PencilIcon,
+  MagnifyingGlassIcon,  // ADD THIS
+  ShoppingCartIcon      // ADD THIS
 } from '@heroicons/react/24/outline'
 
 // Separate component for the search params logic
@@ -76,22 +78,6 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-3 lg:px-10 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <img 
-                src="/icons/Logo.png" 
-                alt="DoMyHomework" 
-                className="h-8 w-auto"
-              />
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900">Secure Checkout</h1>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-3 lg:px-10 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -100,9 +86,12 @@ function CheckoutContent() {
           <div className="space-y-6">
             
             {/* Order Details Card */}
-            <Card className="p-4 sm:p-6 shadow-none sm:shadow-sm border-0 sm:border sm:border-gray-200 sm:rounded-xl bg-transparent sm:bg-white">
+            <Card className="p-4 sm:p-6 border border-gray-400 rounded-xl bg-white">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Review Your Order</h2>
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <MagnifyingGlassIcon className="w-5 h-5 text-purple-600" />
+                Review Your Order
+              </h2>
                 <Badge className="bg-purple-100 text-purple-800 border-purple-200">
                   Order #{orderData.id?.slice(0, 8).toUpperCase()}
                 </Badge>
@@ -265,8 +254,11 @@ function CheckoutContent() {
           <div className="space-y-6">
             
             {/* Payment Section */}
-            <div className="p-4 sm:p-6">
-              <h2 className="text-xl font-semibold mb-6">Make Secure Payment</h2>
+            <Card className="p-4 sm:p-6 border border-gray-400 rounded-xl bg-white">
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                <ShoppingCartIcon className="w-5 h-5 text-purple-600" />
+                Secure Checkout
+              </h2>
 
               {/* Payment Embed */}
               <div className="mb-2" data-payment-section>
@@ -321,7 +313,7 @@ function CheckoutContent() {
                   className="h-8 w-auto"
                 />
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </div>

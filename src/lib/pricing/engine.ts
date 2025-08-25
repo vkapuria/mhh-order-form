@@ -80,12 +80,9 @@ export function calculateEnhancedPricing({
   documentType
 }: PricingParams): EnhancedPricingData {
   
-  console.log("🔍 === PRICING DEBUG START ===");
-  console.log(`📝 INPUT: ${pages} pages, ${deadline} days, ${serviceType}, ${documentType}`);
   
   // Handle empty/invalid inputs
   if (!pages || !deadline) {
-    console.log("❌ Invalid input - returning zeros");
     return {
       basePrice: 0, totalPrice: 0, savings: 0, discountPercentage: 0, discountTier: null,
       pricePerPage: 0, rushFee: 0, rushFeePercentage: 0, isRushOrder: false,
@@ -106,23 +103,18 @@ export function calculateEnhancedPricing({
     basePricePerPage = 14 // Default
   }
   
-  console.log(`💰 Base rate per page: $${basePricePerPage} (service: ${serviceType})`);
   
   // 2️⃣ DOCUMENT TYPE adjustments
   const originalRate = basePricePerPage;
   if (documentType === 'dissertation' || documentType === 'thesis') {
     basePricePerPage = roundPrice(basePricePerPage * 1.3)
-    console.log(`📚 Document adjustment: ${documentType} → $${originalRate} × 1.3 = $${basePricePerPage}`);
   } else if (serviceType === 'presentation' && documentType === 'pitch_deck') {
     basePricePerPage = roundPrice(basePricePerPage * 1.2)
-    console.log(`📊 Document adjustment: ${documentType} → $${originalRate} × 1.2 = $${basePricePerPage}`);
   } else {
-    console.log(`📄 No document adjustment for: ${documentType}`);
   }
   
   // 🎯 TRUE BASE PRICE (never changes - this is what customer sees as base)
   const trueBasePrice = roundPrice(basePricePerPage * pages)
-  console.log(`🎯 TRUE BASE PRICE: ${pages} × $${basePricePerPage} = $${trueBasePrice}`);
 
   // 3️⃣ BULK DISCOUNTS (only for 5+ pages)
   let discountPercentage = 0
@@ -150,28 +142,16 @@ export function calculateEnhancedPricing({
   
   const bulkDiscount = roundPrice(trueBasePrice * (discountPercentage / 100))
   const priceAfterDiscount = roundPrice(trueBasePrice - bulkDiscount)
-  
-  console.log(`💎 BULK DISCOUNT CHECK:`);
-  console.log(`   Pages: ${pages}, Service: ${serviceType}`);
-  console.log(`   Discount: ${discountPercentage}% (${discountTier || 'none'})`);
-  console.log(`   Discount amount: $${trueBasePrice} × ${discountPercentage}% = $${bulkDiscount}`);
-  console.log(`   After discount: $${trueBasePrice} - $${bulkDiscount} = $${priceAfterDiscount}`);
 
   // 4️⃣ DEADLINE MULTIPLIERS with special rules
   let deadlineMultiplier = 1.0
   const deadlineNum = Number(deadline)
   
-  console.log(`⏰ DEADLINE ANALYSIS:`);
-  console.log(`   Deadline: ${deadlineNum} days`);
-  console.log(`   Pages: ${pages} (small ≤${specialPricingRules.smallOrder}, medium ≤${specialPricingRules.mediumOrder})`);
-  
   // Apply special pricing rules
   if (pages <= specialPricingRules.smallOrder) {
     deadlineMultiplier = 1.0
-    console.log(`   🟢 SMALL ORDER RULE: No deadline adjustment (${pages} ≤ ${specialPricingRules.smallOrder})`);
   } else if (pages <= specialPricingRules.mediumOrder && deadlineNum >= 2) {
     deadlineMultiplier = 1.0
-    console.log(`   🟡 MEDIUM ORDER RULE: No deadline adjustment (${pages} ≤ ${specialPricingRules.mediumOrder} && ${deadlineNum} ≥ 2)`);
   } else {
     // Normal deadline multipliers
     const originalMultiplier = deadlineMultiplier;
@@ -186,15 +166,12 @@ export function calculateEnhancedPricing({
       case 0.5: deadlineMultiplier = 1.6; break // 60% premium
       default: deadlineMultiplier = 1.0
     }
-    console.log(`   🔴 NORMAL DEADLINE RULE: ${originalMultiplier} → ${deadlineMultiplier} (${(deadlineMultiplier - 1) * 100}% adjustment)`);
   }
 
   // 5️⃣ CALCULATE RUSH CHARGES
   let totalRushCharges = 0
   let rushPercentage = 0
-  
-  console.log(`🚨 RUSH CHARGES CALCULATION:`);
-  
+    
   // Only apply rush charges if there are premiums
   if (deadlineMultiplier !== 1.0 || exceedsPracticalLimits(pages, deadline)) {
     
@@ -203,14 +180,11 @@ export function calculateEnhancedPricing({
     if (deadlineMultiplier > 1.0) {
       const premiumMultiplier = deadlineMultiplier - 1.0 // e.g., 1.3 - 1.0 = 0.3 (30%)
       deadlinePremium = roundPrice(priceAfterDiscount * premiumMultiplier)
-      console.log(`   💥 Deadline Premium: $${priceAfterDiscount} × ${premiumMultiplier} = $${deadlinePremium}`);
     } else if (deadlineMultiplier < 1.0) {
       // This is actually a discount (longer deadlines)
       const discountMultiplier = 1.0 - deadlineMultiplier // e.g., 1.0 - 0.85 = 0.15 (15% off)
       deadlinePremium = -roundPrice(priceAfterDiscount * discountMultiplier)
-      console.log(`   💚 Deadline Discount: $${priceAfterDiscount} × ${discountMultiplier} = ${Math.abs(deadlinePremium)} (negative = discount)`);
     } else {
-      console.log(`   ⚪ No deadline premium (multiplier = 1.0)`);
     }
     
     // Capacity rush fee (your original workload-based logic)
@@ -218,31 +192,20 @@ export function calculateEnhancedPricing({
     const baseForCapacityFee = priceAfterDiscount + Math.max(0, deadlinePremium);
     const capacityRushFee = roundPrice(baseForCapacityFee * (capacityRushPercentage / 100))
     
-    console.log(`   🏭 Capacity Check:`);
-    console.log(`     Exceeds limits? ${exceedsPracticalLimits(pages, deadline)}`);
-    console.log(`     Capacity rush %: ${capacityRushPercentage}%`);
-    console.log(`     Base for capacity fee: $${baseForCapacityFee}`);
-    console.log(`     Capacity rush fee: $${baseForCapacityFee} × ${capacityRushPercentage}% = $${capacityRushFee}`);
-    
     // Combine all rush charges
     totalRushCharges = roundPrice(deadlinePremium + capacityRushFee)
-    console.log(`   🎯 TOTAL RUSH: $${deadlinePremium} + $${capacityRushFee} = $${totalRushCharges}`);
     
     // Calculate percentage based on price after discount
     if (priceAfterDiscount > 0) {
       rushPercentage = Math.round((Math.abs(totalRushCharges) / priceAfterDiscount) * 100)
-      console.log(`   📊 Rush percentage: ${Math.abs(totalRushCharges)} / ${priceAfterDiscount} = ${rushPercentage}%`);
     }
   } else {
-    console.log(`   ✅ No rush charges needed`);
   }
 
   // 🗑️ REMOVED: All weekend special code - GONE!
 
   // 6️⃣ FINAL PRICE CALCULATION (NO MORE WEEKEND CRAP!)
   const finalPrice = roundPrice(priceAfterDiscount + totalRushCharges)
-  console.log(`🏁 FINAL CALCULATION:`);
-  console.log(`   $${priceAfterDiscount} (after discount) + $${totalRushCharges} (rush) = $${finalPrice}`);
 
   // 7️⃣ NEXT DISCOUNT INCENTIVE
   let nextDiscountAt: number | null = null
@@ -291,14 +254,6 @@ export function calculateEnhancedPricing({
     urgencyMessage: null,      // 🗑️ Always null
     timeRemaining: null        // 🗑️ Always null
   }
-  
-  console.log(`📋 FINAL RETURN VALUES:`);
-  console.log(`   basePrice: $${result.basePrice}`);
-  console.log(`   savings: $${result.savings}`);
-  console.log(`   rushFee: $${result.rushFee}`);
-  console.log(`   totalPrice: $${result.totalPrice}`);
-  console.log(`   pricePerPage: $${result.pricePerPage}`);
-  console.log(`🔍 === PRICING DEBUG END ===`);
   
   return result;
 }

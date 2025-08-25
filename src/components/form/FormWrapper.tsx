@@ -29,7 +29,7 @@ export default function FormWrapper() {
     instructions: '',
     referenceStyle: '',
     files: [],  // Make sure this is here
-    hasFiles: false
+    hasFiles: undefined
   })
   
 
@@ -90,7 +90,7 @@ export default function FormWrapper() {
   }
 
   const handleDetailsChange = (field: string, value: string | number | boolean | File[]) => {
-    setFormData({ ...formData, [field]: value })
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleFormSubmit = async () => {
@@ -340,8 +340,8 @@ export default function FormWrapper() {
                 deadline: formData.deadline || '',
                 referenceStyle: formData.referenceStyle || '',
                 pages: formData.pages || 0,
-                hasFiles: formData.hasFiles || false,
-                files: formData.files || []  // ADD THIS
+                hasFiles: formData.hasFiles,  // ← Remove the || false
+                files: formData.files || []
               }}
               onChange={handleDetailsChange}
               onSubmit={handleFormSubmit}

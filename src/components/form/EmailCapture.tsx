@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
-import { EnvelopeIcon, UserIcon, ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { EnvelopeIcon, UserIcon, ArrowLeftIcon, ArrowRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import type { ServiceType } from '@/types'
 
 interface EmailCaptureProps {
@@ -18,6 +19,16 @@ interface EmailCaptureProps {
   serviceType?: ServiceType
 }
 
+interface ValidationErrors {
+  fullName?: string
+  email?: string
+}
+
+interface ValidationState {
+  fullName: 'idle' | 'validating' | 'valid' | 'invalid'
+  email: 'idle' | 'validating' | 'valid' | 'invalid'
+}
+
 export default function EmailCapture({
   fullName,
   email,
@@ -26,10 +37,147 @@ export default function EmailCapture({
   onBack,
   serviceType,
 }: EmailCaptureProps) {
-  const [isEmailValid, setIsEmailValid] = useState(true)
-  const mainFormRef = useRef<HTMLDivElement>(null)
+  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [validationState, setValidationState] = useState<ValidationState>({
+    fullName: 'idle',
+    email: 'idle'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [touched, setTouched] = useState({ fullName: false, email: false })
   
-  // 🎯 DELAYED AUTO-SCROLL FOR PROGRESS VISIBILITY
+  const mainFormRef = useRef<HTMLDivElement>(null)
+  const emailTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const nameTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Enhanced email regex
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+
+  // 🎯 MUCH MORE RESPECTFUL Name validation - minimal and inclusive
+  const validateName = (name: string): string | null => {
+    const trimmed = name.trim()
+    
+    // Only check for basic presence and reasonable length
+    if (!trimmed) return 'Name is required'
+    if (trimmed.length < 1) return 'Please enter your name'
+    if (trimmed.length > 100) return 'Name is too long (maximum 100 characters)'
+    
+    // Only filter out obvious data entry mistakes - NOT cultural differences
+    // Allow: letters, spaces, hyphens, apostrophes, periods, numbers (for Jr., III), accented characters
+    if (!/^[\p{L}\p{M}\s\-'.0-9]+$/u.test(trimmed)) {
+      return 'Name contains invalid characters'
+    }
+    
+    // Check for obvious mistakes like dates or email addresses
+    if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(trimmed)) {
+      return 'This looks like a date - please enter your name'
+    }
+    if (/@/.test(trimmed)) {
+      return 'This looks like an email - please enter your name'
+    }
+    
+    return null
+  }
+
+  // Email validation - keep this robust
+  const validateEmail = (emailValue: string): string | null => {
+    const trimmed = emailValue.trim().toLowerCase()
+    if (!trimmed) return 'Email address is required'
+    if (trimmed.length > 254) return 'Email address is too long'
+    if (!emailRegex.test(trimmed)) return 'Please enter a valid email address'
+    
+    // Additional checks for common mistakes
+    if (trimmed.endsWith('.')) return 'Email cannot end with a period'
+    if (trimmed.includes('..')) return 'Email cannot contain consecutive periods'
+    if (trimmed.startsWith('.') || trimmed.startsWith('@')) return 'Email format is incorrect'
+    
+    return null
+  }
+
+  // Real-time name validation with debounce
+  const handleNameChange = (value: string) => {
+    onChange('fullName', value)
+    // Only clear errors if user is actively fixing them
+    if (errors.fullName) {
+      setErrors(prev => ({ ...prev, fullName: undefined }))
+      setValidationState(prev => ({ ...prev, fullName: 'idle' }))
+    }
+  }
+
+  // Real-time email validation with debounce
+  const handleEmailChange = (value: string) => {
+    onChange('email', value)
+    // Only clear errors if user is actively fixing them
+    if (errors.email) {
+      setErrors(prev => ({ ...prev, email: undefined }))
+      setValidationState(prev => ({ ...prev, email: 'idle' }))
+    }
+  }
+  
+  const handleEmailBlur = () => {
+    if (!email.trim()) return
+    
+    setTouched(prev => ({ ...prev, email: true }))
+    const error = validateEmail(email)
+    setErrors(prev => ({ ...prev, email: error || undefined }))
+    setValidationState(prev => ({ 
+      ...prev, 
+      email: error ? 'invalid' : 'valid' 
+    }))
+  }
+
+  const handleNameBlur = () => {
+    if (!fullName.trim()) return
+    
+    setTouched(prev => ({ ...prev, fullName: true }))
+    const error = validateName(fullName)
+    setErrors(prev => ({ ...prev, fullName: error || undefined }))
+    setValidationState(prev => ({ 
+      ...prev, 
+      fullName: error ? 'invalid' : 'valid' 
+    }))
+  }
+
+  // Form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    setTouched({ fullName: true, email: true })
+
+    const nameError = validateName(fullName)
+    const emailError = validateEmail(email)
+
+    setErrors({
+      fullName: nameError || undefined,
+      email: emailError || undefined
+    })
+
+    setValidationState({
+      fullName: nameError ? 'invalid' : 'valid',
+      email: emailError ? 'invalid' : 'valid'
+    })
+
+    if (!nameError && !emailError) {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 200))
+        onNext()
+      } catch (error) {
+        console.error('Form submission error:', error)
+      }
+    }
+
+    setIsSubmitting(false)
+  }
+
+  // Cleanup timeouts
+  useEffect(() => {
+    return () => {
+      if (emailTimeoutRef.current) clearTimeout(emailTimeoutRef.current)
+      if (nameTimeoutRef.current) clearTimeout(nameTimeoutRef.current)
+    }
+  }, [])
+
+  // Auto-scroll effect
   useEffect(() => {
     if (mainFormRef.current) {
       setTimeout(() => {
@@ -58,31 +206,19 @@ export default function EmailCapture({
         }
 
         requestAnimationFrame(animation)
-      }, 600) // 🎯 LONGER DELAY - Let user see green Step 1
+      }, 600)
     }
   }, [])
 
-  const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!fullName.trim()) return
-    const ok = validateEmail(email)
-    setIsEmailValid(ok)
-    if (!ok) return
-    onNext()
+  // 🎯 BETTER INPUT STYLING with proper icon spacing
+  const getInputStyling = (field: 'fullName' | 'email') => {
+    return 'pl-12 pr-12 border-gray-400 focus:border-gray-500'
   }
 
-  const handleEmailChange = (val: string) => {
-    onChange('email', val)
-    if (!isEmailValid && val) setIsEmailValid(validateEmail(val))
-  }
-
-  const isValid = Boolean(fullName.trim() && email && validateEmail(email))
+  const isValid = fullName.trim().length > 0 && email.trim().includes('@')
 
   return (
     <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
-      {/* Accordion Summary */}
       {serviceType && (
         <StepSummary
           stepNumber={1}
@@ -94,88 +230,122 @@ export default function EmailCapture({
         />
       )}
 
-      {/* 🎯 MAIN FORM CARD WITH AUTO-SCROLL REF */}
       <Card ref={mainFormRef} className="p-4 sm:p-8 shadow-none sm:shadow-sm border-0 sm:border sm:border-gray-200 sm:rounded-xl bg-transparent sm:bg-white">
-        {/* 🎯 LEFT-ALIGNED HEADER */}
         <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Contact Information</h2>
-        <p className="text-gray-600 text-base">We need these details to deliver your completed work</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Contact Information</h2>
+          <p className="text-gray-600 text-base">We need these details to deliver your completed work</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Name & Email */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Full Name */}
-            <div>
-            <Label
-  htmlFor="fullName"
-  className="text-base font-semibold text-black flex items-center gap-2 mb-2"  // ← Changed
->
-  <UserIcon className="w-5 h-5 text-gray-500" />  {/* ← Changed size */}
-  Full Name
+            
+            {/* 🎯 BETTER ICON POSITIONING - Full Name */}
+            <div className="space-y-2">
+            <Label htmlFor="fullName" className="text-base font-semibold text-black flex items-center gap-2">
+  <UserIcon className="w-5 h-5 text-gray-500" />
+  Full Name <span className="text-red-500">*</span>
 </Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => onChange('fullName', e.target.value)}
-                placeholder="Enter your full name"
-                className="h-11 border-gray-400 focus:border-gray-500 rounded-xl focus:ring-0 focus-visible:ring-0"
-                autoFocus
-              />
-              {/* 🎯 HELPFUL SUBTEXT */}
-              <p className="text-xs text-gray-500 mt-1">We'll use this for your order confirmation.</p>
+              
+              <div className="relative">
+                {/* 🔥 LEFT ICON with better positioning */}
+                
+                <Input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  onBlur={handleNameBlur}
+                  placeholder="Enter your name"
+                  className="h-11 rounded-xl focus:ring-0 focus-visible:ring-0 pl-4 pr-4 border-gray-300 focus:border-gray-500"
+                  autoFocus
+                  aria-describedby={errors.fullName ? "fullName-error" : "fullName-help"}
+                  aria-invalid={!!errors.fullName}
+                />
+              </div>
+
+              {errors.fullName && touched.fullName && (
+                <p id="fullName-error" className="text-sm text-red-600 flex items-center gap-1">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  {errors.fullName}
+                </p>
+              )}
+
+              {!errors.fullName && (
+                <p id="fullName-help" className="text-xs text-gray-500">
+                    We'll use this for your order confirmation.
+                </p>
+              )}
             </div>
 
-            {/* Email */}
-            <div>
-            <Label
-  htmlFor="email"  
-  className="text-base font-semibold text-black flex items-center gap-2 mb-2"   // ← Changed
->
-  <EnvelopeIcon className="w-5 h-5 text-gray-500" />  {/* ← Changed size */}
-  Email Address
+            {/* 🎯 BETTER ICON POSITIONING - Email */}
+            <div className="space-y-2">
+            <Label htmlFor="email" className="text-base font-semibold text-black flex items-center gap-2">
+  <EnvelopeIcon className="w-5 h-5 text-gray-500" />
+  Email Address <span className="text-red-500">*</span>
 </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                onBlur={() => email && setIsEmailValid(validateEmail(email))}
-                placeholder="your.email@example.com"
-                className={`h-11 border-gray-400 focus:border-gray-500 rounded-xl focus:ring-0 focus-visible:ring-0 ${
-                  !isEmailValid ? 'border-red-500' : ''
-                }`}
-              />
-              {!isEmailValid ? (
-                <p className="mt-1 text-sm text-red-600">Please enter a valid email address</p>
-              ) : (
-                <p className="text-xs text-gray-500 mt-1">We'll send updates and your completed work here.</p>
+              
+              <div className="relative">
+                {/* 🔥 LEFT ICON with better positioning */}
+                
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  onBlur={handleEmailBlur}
+                  placeholder="your.email@example.com"
+                  className="h-11 rounded-xl focus:ring-0 focus-visible:ring-0 pl-4 pr-12 border-gray-400 focus:border-gray-500"
+                  aria-describedby={errors.email ? "email-error" : "email-help"}
+                  aria-invalid={!!errors.email}
+                />
+              </div>
+
+              {errors.email && touched.email && (
+                <p id="email-error" className="text-sm text-red-600 flex items-center gap-1">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  {errors.email}
+                </p>
+              )}
+
+              {!errors.email && (
+                <p id="email-help" className="text-xs text-gray-500">
+                  We'll send updates and your completed work here.
+                </p>
               )}
             </div>
           </div>
 
-          {/* Navigation - CONSISTENT BUTTON STYLING */}
+          {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
             <Button
               type="button"
               onClick={onBack}
-              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
+              disabled={isSubmitting}
+              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
+            >
               <ArrowLeftIcon className="w-4 h-4" />
               Back
             </Button>
+            
             <Button
               type="submit"
-              disabled={!isValid}
+              disabled={!isValid || isSubmitting}
               className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
             >
-              Continue to Assignment Details
-              <ArrowRightIcon className="w-4 h-4" />
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Continue to Assignment Details
+                  <ArrowRightIcon className="w-4 h-4" />
+                </>
+              )}
             </Button>
           </div>
 
-          {/* 🎯 HELPFUL "WHAT'S NEXT" TEXT */}
           <p className="text-xs text-gray-500 text-center">
             Next, you'll tell us about your assignment and deadline.
           </p>

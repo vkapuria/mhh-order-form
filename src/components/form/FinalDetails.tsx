@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
+import FileUpload from './FileUpload'
 import { calculateEnhancedPricing } from '@/lib/pricing/engine'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
@@ -17,14 +18,16 @@ import {
   PlusIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
+import { CheckCircleIcon } from '@heroicons/react/24/solid'
 
 interface FinalDetailsProps {
   data: {
     deadline: string
     referenceStyle: string
     pages: number
-    hasFiles: boolean
+    hasFiles: boolean | undefined
     files?: File[]
   }
   previousData?: {
@@ -40,6 +43,13 @@ interface FinalDetailsProps {
   onBack: () => void
   isSubmitting?: boolean
 }
+
+interface ValidationErrors {
+  pages?: string
+  deadline?: string
+  files?: string
+}
+
 
 const getDeadlineDate = (days: string) => {
   const date = new Date()
@@ -70,6 +80,9 @@ const referenceStyles = [
   { value: 'none', label: 'No specific style' },
 ]
 
+const allowedFileTypes = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'ppt', 'pptx']
+const maxFileSize = 10 * 1024 * 1024 // 10MB
+
 export default function FinalDetails({
   data,
   previousData,
@@ -78,10 +91,101 @@ export default function FinalDetails({
   onBack,
   isSubmitting = false
 }: FinalDetailsProps) {
-  const isValid = Boolean(data.deadline && data.referenceStyle && data.pages > 0)
-  const mainFormRef = useRef<HTMLDivElement>(null)
+  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [touched, setTouched] = useState({ 
+    pages: false, 
+    deadline: false, 
+    files: false 
+  })
   
-  // 🎯 DELAYED AUTO-SCROLL FOR PROGRESS VISIBILITY
+  const mainFormRef = useRef<HTMLDivElement>(null)
+
+  // Validation functions
+  const validatePages = (pages: number): string | null => {
+    if (!pages || pages === 0) return 'Please enter the number of pages'
+    if (pages < 1) return 'Minimum 1 page required'
+    if (pages > 100) return 'Maximum 100 pages allowed'
+    if (!Number.isInteger(pages)) return 'Pages must be a whole number'
+    return null
+  }
+
+  const validateDeadline = (deadline: string): string | null => {
+    if (!deadline || deadline.trim() === '') return 'Please select a deadline'
+    return null
+  }
+
+  const validateReferenceStyle = (referenceStyle: string): string | null => {
+    if (!referenceStyle || referenceStyle.trim() === '') return 'Please select a reference style'
+    return null
+  }
+
+  const validateFiles = (files?: File[]): string | null => {
+    if (!data.hasFiles || !files || files.length === 0) return null
+
+    for (const file of files) {
+      // Check file size
+      if (file.size > maxFileSize) {
+        return `File "${file.name}" is too large. Maximum size is 10MB.`
+      }
+
+      // Check file type
+      const fileExtension = file.name.split('.').pop()?.toLowerCase()
+      if (!fileExtension || !allowedFileTypes.includes(fileExtension)) {
+        return `File type ".${fileExtension}" is not supported. Allowed: ${allowedFileTypes.join(', ').toUpperCase()}`
+      }
+    }
+
+    return null
+  }
+
+  // Handle field changes with validation clearing
+  const handlePagesChange = (value: number) => {
+    onChange('pages', value)
+    // Clear error when user enters valid number
+    if (errors.pages && value >= 1 && value <= 100) {
+      setErrors(prev => ({ ...prev, pages: undefined }))
+    }
+  }
+
+  const handleDeadlineChange = (value: string) => {
+    onChange('deadline', value)
+    // Clear error when user selects something
+    if (errors.deadline && value) {
+      setErrors(prev => ({ ...prev, deadline: undefined }))
+    }
+  }
+
+  // Form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Mark all required fields as touched
+setTouched({ 
+  pages: true, 
+  deadline: true, 
+  files: true 
+})
+
+// Validate all required fields
+const pagesError = validatePages(data.pages)
+const deadlineError = validateDeadline(data.deadline)
+const filesError = data.hasFiles === undefined ? 'Please choose whether you want to attach files' : null
+
+setErrors({
+  pages: pagesError || undefined,
+  deadline: deadlineError || undefined,
+  files: filesError || undefined
+})
+
+
+// Proceed if no errors
+if (!pagesError && !deadlineError && !filesError) {
+  onSubmit()
+}
+  }
+
+
+  // Auto-scroll effect
   useEffect(() => {
     if (mainFormRef.current) {
       setTimeout(() => {
@@ -110,15 +214,14 @@ export default function FinalDetails({
         }
 
         requestAnimationFrame(animation)
-      }, 1000) // 🎯 LONGEST DELAY - Let user see green Steps 1, 2 & 3
+      }, 1000)
     }
   }, [])
 
-  const handleFilesChange = (filesList: FileList | null) => {
-    const arr = filesList ? Array.from(filesList) : []
-    onChange('files', arr)
-    onChange('hasFiles', arr.length > 0)
-  }
+  const isValid = data.pages > 0 && 
+                data.deadline.length > 0 && 
+                data.hasFiles !== undefined &&
+                (data.hasFiles === false || (data.hasFiles === true && data.files && data.files.length > 0))
 
   return (
     <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
@@ -152,9 +255,9 @@ export default function FinalDetails({
         </>
       )}
 
-      {/* 🎯 MAIN FORM CARD WITH AUTO-SCROLL REF */}
+      {/* Main Form Card */}
       <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
-        {/* 🎯 GPT-STYLE LEFT-ALIGNED HEADER */}
+        {/* Header */}
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Final details</h2>
           <p className="text-gray-600 text-base">
@@ -163,173 +266,194 @@ export default function FinalDetails({
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => { e.preventDefault(); if (isValid) onSubmit() }} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* ROW 1: Pages + Deadline */}
+          {/* Row 1: Pages + Deadline */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             
-            {/* LEFT: Pages */}
+            {/* Pages Field */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <HashtagIcon className="w-5 h-5" />
-                Number of Pages
+                Number of Pages<span className="text-red-500">*</span>
               </Label>
               
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => onChange('pages', Math.max(1, (data.pages || 1) - 1))}
+                  onClick={() => handlePagesChange(Math.max(1, (data.pages || 1) - 1))}
                   disabled={(data.pages || 0) <= 1}
                   className="w-10 h-9 flex items-center justify-center rounded-xl border border-gray-400 hover:bg-gray-50 disabled:opacity-40"
                 >
                   <MinusIcon className="w-4 h-4 text-gray-600" />
                 </button>
                 
-                <Input
-  type="number"
-  value={data.pages || ''}
-  onChange={(e) => {
-    const val = parseInt(e.target.value) || 0
-    onChange('pages', Math.max(1, Math.min(100, val)))
-  }}
-  className="flex-1 h-9 text-base text-center border-gray-400 focus:border-gray-500 rounded-xl focus:ring-0 focus-visible:ring-0"
-  placeholder="0"
-/>
+                <div className="relative flex-1">
+  <Input
+    type="number"
+    value={data.pages || ''}
+    onChange={(e) => {
+      const val = parseInt(e.target.value) || 0
+      handlePagesChange(Math.max(0, Math.min(100, val)))
+    }}
+    className="h-9 text-base text-center border-gray-400 focus:border-gray-500 rounded-xl focus:ring-0 focus-visible:ring-0"
+    placeholder="0"
+    min={1}
+    max={100}
+  />
+</div>
                 
                 <button
                   type="button"
-                  onClick={() => onChange('pages', Math.min(100, (data.pages || 0) + 1))}
+                  onClick={() => handlePagesChange(Math.min(100, (data.pages || 0) + 1))}
                   disabled={(data.pages || 0) >= 100}
                   className="w-10 h-9 flex items-center justify-center rounded-xl border border-gray-400 hover:bg-gray-50 disabled:opacity-40"
                 >
                   <PlusIcon className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
+
+              {/* Error Message */}
+              {errors.pages && touched.pages && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  {errors.pages}
+                </p>
+              )}
               
-              {/* 🎯 GPT-STYLE HELPFUL SUBTEXT */}
-              <p className="text-xs text-gray-500 -mt-2">Most essays are ~275 words per page.</p>
+              {/* Help Text */}
+              {!errors.pages && (
+                <p className="text-xs text-gray-500">~275 words per page.</p>
+              )}
             </div>
 
-            {/* RIGHT: Deadline */}
+            {/* Deadline Field */}
             <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
+              <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <ClockIcon className="w-5 h-5" />
-                Deadline
+                Deadline<span className="text-red-500">*</span>
               </Label>
               
-              <Select value={data.deadline} onValueChange={(v) => onChange('deadline', v)}>
-  <SelectTrigger className="w-full h-11 text-base border-gray-400 focus:border-gray-500 rounded-xl">
-    <SelectValue placeholder="Select a deadline" />
-  </SelectTrigger>
-  <SelectContent>
-    {deadlines.map((d) => (
-      <SelectItem key={d.value} value={d.value}>
-        <div className="flex items-center justify-between w-full">
-          <span className="flex items-center gap-2">
-            <span className="font-medium">{d.label}</span>
-            <span className="text-gray-500">({d.date})</span>
-          </span>
-          {d.tag && (
-            <span className={`ml-3 text-xs px-2 py-0.5 rounded ${
-              d.tag === 'Best Value' ? 'bg-green-100 text-green-700' :
-              d.tag.includes('Urgent') ? 'bg-orange-100 text-orange-700' :
-              'bg-yellow-100 text-yellow-700'
-            }`}>
-              {d.tag}
-            </span>
-          )}
-        </div>
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
-              
-              {/* 🎯 GPT-STYLE HELPFUL SUBTEXT */}
-              <p className="text-xs text-gray-500 -mt-2">Tighter deadlines include a rush fee.</p>
-            </div>
-          </div>
-
-          {/* ROW 2: Reference Style + Files */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            
-            {/* LEFT: Reference Style */}
-            <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
-                <DocumentDuplicateIcon className="w-5 h-5" />
-                Reference Style
-              </Label>
-              
-              <Select value={data.referenceStyle} onValueChange={(v) => onChange('referenceStyle', v)}>
-                <SelectTrigger className="w-full h-11 text-base border-gray-400 focus:border-gray-500 rounded-xl">
-                  <SelectValue placeholder="Select a style" />
-                </SelectTrigger>
-                <SelectContent>
-                  {referenceStyles.map((style) => (
-                    <SelectItem key={style.value} value={style.value}>
-                      {style.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {/* 🎯 GPT-STYLE HELPFUL SUBTEXT */}
-              <p className="text-xs text-gray-500 -mt-2">APA is the most common.</p>
-            </div>
-
-            {/* RIGHT: Files */}
-            <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
-                <PaperClipIcon className="w-5 h-5" />
-                Attach files (optional)
-              </Label>
-              
-              {/* 🎯 GPT-STYLE SIMPLE CHECKBOX APPROACH */}
-              <div className="flex items-center gap-2 mb-3">
-                <input
-                  id="hasFiles"
-                  type="checkbox"
-                  checked={!!data.hasFiles}
-                  onChange={(e) => onChange('hasFiles', e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-                />
-                <Label htmlFor="hasFiles" className="text-sm text-gray-700">
-                  Yes, I want to attach files (rubric, sources, drafts)
-                </Label>
-              </div>
-
-              {/* File Upload Area */}
-              <div className={`${data.hasFiles ? 'block' : 'hidden'}`}>
-                <label
-                  htmlFor="files"
-                  className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-gray-300 p-4 text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+              <div className="relative">
+                <Select 
+                  value={data.deadline} 
+                  onValueChange={handleDeadlineChange}
                 >
-                  <PaperClipIcon className="w-4 h-4" />
-                  Click to choose files (PDF, DOCX, PPTX, TXT)
-                </label>
-                <input
-                  id="files"
-                  type="file"
-                  multiple
-                  className="sr-only"
-                  onChange={(e) => handleFilesChange(e.target.files)}
-                />
-
-                {/* Selected files preview */}
-                {data.files && data.files.length > 0 && (
-                  <ul className="mt-3 space-y-1 text-xs text-gray-600">
-                    {data.files.map((f, idx) => (
-                      <li key={idx} className="truncate">
-                        {f.name} <span className="text-gray-400">({Math.ceil(f.size / 1024)} KB)</span>
-                      </li>
+                  <SelectTrigger className="w-full h-11 text-base border-gray-300 focus:border-gray-500 rounded-xl">
+                    <SelectValue placeholder="Select a deadline" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deadlines.map((d) => (
+                      <SelectItem key={d.value} value={d.value}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="flex items-center gap-2">
+                            <span className="font-medium">{d.label}</span>
+                            <span className="text-gray-500">({d.date})</span>
+                          </span>
+                          {d.tag && (
+                            <span className={`ml-3 text-xs px-2 py-0.5 rounded ${
+                              d.tag === 'Best Value' ? 'bg-green-100 text-green-700' :
+                              d.tag.includes('Urgent') ? 'bg-orange-100 text-orange-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {d.tag}
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
                     ))}
-                  </ul>
-                )}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {/* Error Message */}
+              {errors.deadline && touched.deadline && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  {errors.deadline}
+                </p>
+              )}
+              
+              {/* Help Text */}
+              {!errors.deadline && (
+                <p className="text-xs text-gray-500">Tighter deadlines include a rush fee.</p>
+              )}
             </div>
           </div>
 
-{/* Mobile Price Preview - appears when we can calculate price */}
-{isValid && (
+          {/* Row 2: File Upload Decision (Full Width) */}
+<div className="space-y-6">
+  
+  {/* File Upload Choice - Mandatory */}
+  <div className="space-y-3">
+    <Label className="flex items-center gap-2 text-base font-semibold text-black mb-4">
+      <PaperClipIcon className="w-5 h-5" />
+      Do you have files to attach?<span className="text-red-500">*</span>
+    </Label>
+    
+    {/* Yes/No Toggle Buttons */}
+<div className="flex gap-4">
+  <button
+    type="button"
+    onClick={(e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      onChange('hasFiles', true)
+    }}
+    className={`flex-1 h-12 rounded-xl border-2 font-medium transition-all ${
+      data.hasFiles === true 
+        ? 'border-black bg-black text-white' 
+        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+    }`}
+  >
+    📎 Yes, I have files to attach
+  </button>
+  
+  <button
+    type="button"
+    onClick={(e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      onChange('hasFiles', false)
+      onChange('files', [])
+    }}
+    className={`flex-1 h-12 rounded-xl border-2 font-medium transition-all ${
+      data.hasFiles === false 
+        ? 'border-black bg-black text-white' 
+        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+    }`}
+  >
+    ❌ No files to attach
+  </button>
+</div>
+
+    {/* Error for not selecting */}
+    {data.hasFiles === undefined && touched.files && (
+      <p className="text-sm text-red-600 flex items-center gap-1">
+        <ExclamationTriangleIcon className="h-4 w-4" />
+        Please choose whether you want to attach files
+      </p>
+    )}
+  </div>
+
+  {/* File Upload Component - Full Width */}
+  {data.hasFiles === true && (
+    <div className="border-t pt-6">
+      <FileUpload
+        files={data.files || []}
+        onChange={(files) => {
+          onChange('files', files)
+        }}
+        maxFiles={5}
+        maxSizePerFile={10}
+        acceptedTypes={['pdf', 'doc', 'docx', 'txt', 'rtf', 'ppt', 'pptx']}
+      />
+    </div>
+  )}
+</div>
+
+          {/* Mobile Price Preview */}
+          {isValid && (
             <div className="lg:hidden bg-purple-50 border border-purple-200 rounded-xl p-6 mt-8">
               <h3 className="text-lg font-semibold text-purple-900 mb-4 text-center">
                 💰 Your Price Quote
@@ -377,13 +501,14 @@ export default function FinalDetails({
             </div>
           )}
 
-          {/* Navigation - MY CONSISTENT BUTTON STYLING */}
+          {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
             <Button
               type="button"
               onClick={onBack}
               disabled={isSubmitting}
-              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
+              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
+            >
               <ArrowLeftIcon className="w-4 h-4" />
               Back
             </Button>
@@ -391,9 +516,13 @@ export default function FinalDetails({
             <Button 
               type="submit" 
               disabled={!isValid || isSubmitting}
-              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
+              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
+            >
               {isSubmitting ? (
-                <>Processing...</>
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  Processing...
+                </>
               ) : (
                 <>
                   Continue to Checkout
@@ -403,7 +532,6 @@ export default function FinalDetails({
             </Button>
           </div>
 
-          {/* 🎯 GPT-STYLE HELPFUL "WHAT'S NEXT" TEXT */}
           <p className="text-xs text-gray-500 text-center">
             You can review your order details on the next page.
           </p>

@@ -345,11 +345,6 @@ function PricingSidebarBody({ formData }: { formData: any }) {
   const competitorTotal = pricing.totalPrice * (1 + MARKET_UPLIFT);
   const saveVsMarket = Math.max(0, competitorTotal - pricing.totalPrice);
 
-  console.log("=== UI PRICING DEBUG ===");
-console.log("Pricing object:", pricing);
-console.log(`Base: $${pricing.basePrice}, Savings: $${pricing.savings}, Rush: $${pricing.rushFee}, Total: $${pricing.totalPrice}`);
-console.log(`Math check: $${pricing.basePrice} - $${pricing.savings} + $${pricing.rushFee} = $${pricing.basePrice - pricing.savings + pricing.rushFee}`);
-
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Price Card */}
