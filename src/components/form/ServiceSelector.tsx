@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,6 @@ interface ServiceOption {
   title: string
   description: string
   icon: React.ComponentType<React.ComponentProps<'svg'>>
-  recommended?: boolean
 }
 
 const services: ServiceOption[] = [
@@ -28,8 +27,7 @@ const services: ServiceOption[] = [
     value: 'writing',
     title: 'Writing',
     description: 'Get an original essay, research paper, or report from scratch.',
-    icon: DocumentTextIcon,
-    recommended: true
+    icon: DocumentTextIcon
   },
   {
     value: 'editing',
@@ -55,15 +53,21 @@ interface ServiceSelectorProps {
 export default function ServiceSelector({ value, onChange }: ServiceSelectorProps) {
   const [selectedValue, setSelectedValue] = useState<ServiceType | undefined>(value)
 
-  // Visually hint a default choice based on last selection
-  const hintedValue = useMemo<ServiceType>(() => {
-    if (selectedValue) return selectedValue
-    if (typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem(MEMORY_KEY) as ServiceType | null
-      if (saved && services.some((s) => s.value === saved)) return saved
+  // Set initial selection based on memory or default
+  useEffect(() => {
+    if (!selectedValue && !value) {
+      let initialValue: ServiceType = 'writing' // Default
+      
+      if (typeof window !== 'undefined') {
+        const saved = window.localStorage.getItem(MEMORY_KEY) as ServiceType | null
+        if (saved && services.some((s) => s.value === saved)) {
+          initialValue = saved
+        }
+      }
+      
+      setSelectedValue(initialValue)
     }
-    return 'writing' // Default hint
-  }, [selectedValue])
+  }, [selectedValue, value])
 
   const handleSelect = (val: ServiceType) => {
     try {
@@ -81,7 +85,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-xl space-y-8">
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">
           What type of help do you need?
@@ -92,14 +96,14 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
       </div>
 
       <RadioGroup
-        value={selectedValue || hintedValue}
+        value={selectedValue || ''}
         onValueChange={(v) => handleSelect(v as ServiceType)}
         className="space-y-4"
         aria-label="Service Type"
       >
         {services.map((service) => {
           const Icon = service.icon
-          const selected = (selectedValue || hintedValue) === service.value
+          const selected = selectedValue === service.value
 
           return (
             <Label key={service.value} htmlFor={service.value} className="block cursor-pointer">
@@ -115,41 +119,40 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
                 }}
                 className={`
                   px-6 py-4 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2
                   ${
                     selected
-                      ? 'border-blue-500 shadow-md'
+                      ? 'border-purple-500 shadow-md bg-purple-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }
                 `}
               >
                 <div className="flex items-start gap-5">
-                  {/* Simplified icon - single neutral color */}
+                  {/* Icon */}
                   <div className="mt-2 flex-shrink-0">
-                    <Icon className="h-8 w-8 text-gray-600" />
+                    <Icon className={`h-8 w-8 ${selected ? 'text-purple-600' : 'text-gray-600'}`} />
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-semibold text-gray-900">{service.title}</h3>
-                        {service.recommended && (
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                            Recommended
-                          </Badge>
-                        )}
+                        <h3 className={`text-xl font-semibold ${selected ? 'text-purple-900' : 'text-gray-900'}`}>
+                          {service.title}
+                        </h3>
                       </div>
 
-                      {/* Selection indicator with checkmark */}
+                      {/* Selection chip - green for confirmation */}
                       {selected && (
-                        <div className="flex items-center text-blue-600">
-                          <CheckIcon className="w-5 h-5 mr-1" />
-                          <span className="text-sm font-medium">Selected</span>
+                        <div className="flex items-center">
+                          <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+                            <CheckIcon className="w-3 h-3" />
+                            Selected
+                          </Badge>
                         </div>
                       )}
                     </div>
 
-                    <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                    <p className={`mt-2 text-sm leading-relaxed ${selected ? 'text-purple-700' : 'text-gray-600'}`}>
                       {service.description}
                     </p>
                   </div>
@@ -169,13 +172,13 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
         })}
       </RadioGroup>
 
-      {/* Next Button - black styling with arrow */}
+      {/* Next Button - purple styling to match theme */}
       {selectedValue && (
         <div className="flex justify-end pt-2">
           <Button 
             onClick={handleNext}
             size="lg"
-            className="px-6 py-3 text-base flex items-center gap-2 bg-black text-white hover:bg-gray-800"
+            className="px-6 py-3 text-base flex items-center gap-2 bg-purple-600 text-white hover:bg-purple-700"
           >
             Next
             <ArrowRightIcon className="w-4 h-4" />

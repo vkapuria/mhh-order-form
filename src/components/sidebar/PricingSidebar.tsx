@@ -161,7 +161,7 @@ function PromisesCard() {
         <img
           src="/icons/best-results.svg"
           alt="Quality & security"
-          className="h-8 w-8 sm:h-6 sm:w-6"
+          className="h-10 w-auto sm:h-10 sm:w-auto"
         />
         <div>
           <h4 className="font-semibold text-slate-900 text-lg">Our promises</h4>
@@ -172,7 +172,7 @@ function PromisesCard() {
       <ul className="space-y-3 text-sm text-slate-700">
         <li className="flex items-center gap-2">
           <CheckCircleIcon className="w-4 h-4 text-[#8800e9]" />
-          Original work & free revisions (7 days)
+          Original work & free revisions
         </li>
         <li className="flex items-center gap-2">
           <ClockIcon className="w-4 h-4 text-[#8800e9]" />

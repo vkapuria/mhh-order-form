@@ -1,37 +1,52 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import Header from '@/components/layout/Header'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "Academic Excellence Hub - Professional Writing, Editing & Presentation Services",
-  description: "Get expert help with essays, research papers, editing, and presentations. 2,847+ satisfied students. 4.9/5 rating. On-time delivery guaranteed. Professional academic support from PhD writers.",
-  keywords: "academic writing, essay help, research papers, editing services, presentations, homework help, professional writers",
-  authors: [{ name: "Academic Excellence Hub" }],
+  title: "DoMyHomework - Order Academic Writing & Homework Help Online",
+  description: "Order professional academic writing, editing, and presentation services online. Get expert homework help with essays, research papers, and more. Fast, reliable, and affordable.",
+  keywords: "homework help, academic writing service, essay writing, research papers, order online, domyhomework, assignment help, professional writers",
+  authors: [{ name: "DoMyHomework" }],
   robots: "index, follow",
+  icons: [
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '32x32',
+      url: '/icons/Favicon.png',
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '16x16', 
+      url: '/icons/Favicon.png',
+    },
+    {
+      rel: 'apple-touch-icon',
+      sizes: '180x180',
+      url: '/icons/Favicon.png',
+    }
+  ],
   openGraph: {
-    title: "Academic Excellence Hub - Professional Academic Services",
-    description: "Expert writing, editing, and presentation services. Join 2,847+ satisfied students with 4.9/5 rating.",
+    title: "DoMyHomework - Order Academic Writing & Homework Help Online",
+    description: "Order professional academic writing, editing, and presentation services online. Get expert homework help with essays, research papers, and more.",
     type: "website",
     locale: "en_US",
+    url: "https://domyhomework.co",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Academic Excellence Hub - Professional Academic Services",
-    description: "Expert writing, editing, and presentation services. Join 2,847+ satisfied students.",
+    title: "DoMyHomework - Order Academic Writing & Homework Help Online", 
+    description: "Order professional academic writing, editing, and presentation services online. Get expert homework help with essays, research papers, and more.",
   }
 };
 
-// Move viewport to separate export
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -45,14 +60,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-purple-50 via-white to-teal-50`}
-      >
-        {children}
-      </body>
+      <body className={`${inter.variable} font-sans antialiased bg-gradient-to-br from-purple-50 via-white to-teal-50`}>
+  <Header />
+  {children}
+</body>
     </html>
   );
 }

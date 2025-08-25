@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
+import { calculateEnhancedPricing } from '@/lib/pricing/engine'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   ClockIcon,
@@ -120,7 +121,7 @@ export default function FinalDetails({
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
       {/* Accordion Summaries */}
       {previousData && (
         <>
@@ -169,7 +170,7 @@ export default function FinalDetails({
             
             {/* LEFT: Pages */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+              <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <HashtagIcon className="w-5 h-5" />
                 Number of Pages
               </Label>
@@ -211,7 +212,7 @@ export default function FinalDetails({
 
             {/* RIGHT: Deadline */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <ClockIcon className="w-5 h-5" />
                 Deadline
               </Label>
@@ -244,7 +245,7 @@ export default function FinalDetails({
 </Select>
               
               {/* 🎯 GPT-STYLE HELPFUL SUBTEXT */}
-              <p className="text-xs text-gray-500 -mt-2">Tighter deadlines may include a rush fee.</p>
+              <p className="text-xs text-gray-500 -mt-2">Tighter deadlines include a rush fee.</p>
             </div>
           </div>
 
@@ -253,7 +254,7 @@ export default function FinalDetails({
             
             {/* LEFT: Reference Style */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <DocumentDuplicateIcon className="w-5 h-5" />
                 Reference Style
               </Label>
@@ -277,7 +278,7 @@ export default function FinalDetails({
 
             {/* RIGHT: Files */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <PaperClipIcon className="w-5 h-5" />
                 Attach files (optional)
               </Label>
@@ -327,14 +328,62 @@ export default function FinalDetails({
             </div>
           </div>
 
+{/* Mobile Price Preview - appears when we can calculate price */}
+{isValid && (
+            <div className="lg:hidden bg-purple-50 border border-purple-200 rounded-xl p-6 mt-8">
+              <h3 className="text-lg font-semibold text-purple-900 mb-4 text-center">
+                💰 Your Price Quote
+              </h3>
+              
+              {(() => {
+                const pricing = calculateEnhancedPricing({
+                  serviceType: previousData?.serviceType as any || 'writing',
+                  pages: data.pages,
+                  deadline: data.deadline,
+                  documentType: previousData?.documentType || 'essay',
+                })
+                
+                return (
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-900 mb-2">
+                      ${pricing.totalPrice.toFixed(2)}
+                    </div>
+                    <p className="text-sm text-purple-700 mb-4">
+                      ${pricing.pricePerPage.toFixed(2)} per page • {data.pages} page{data.pages > 1 ? 's' : ''}
+                    </p>
+                    
+                    {/* Price breakdown */}
+                    <div className="bg-white rounded-lg p-4 text-left space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Base Price:</span>
+                        <span>${pricing.basePrice.toFixed(2)}</span>
+                      </div>
+                      {pricing.savings > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Discount:</span>
+                          <span>-${pricing.savings.toFixed(2)}</span>
+                        </div>
+                      )}
+                      {pricing.rushFee > 0 && (
+                        <div className="flex justify-between text-orange-600">
+                          <span>Rush Fee:</span>
+                          <span>+${pricing.rushFee.toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+
           {/* Navigation - MY CONSISTENT BUTTON STYLING */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
             <Button
               type="button"
               onClick={onBack}
               disabled={isSubmitting}
-              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
               <ArrowLeftIcon className="w-4 h-4" />
               Back
             </Button>
@@ -342,13 +391,12 @@ export default function FinalDetails({
             <Button 
               type="submit" 
               disabled={!isValid || isSubmitting}
-              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
               {isSubmitting ? (
                 <>Processing...</>
               ) : (
                 <>
-                  Continue to Secure Checkout
+                  Continue to Checkout
                   <ArrowRightIcon className="w-4 h-4" />
                 </>
               )}
@@ -357,7 +405,7 @@ export default function FinalDetails({
 
           {/* 🎯 GPT-STYLE HELPFUL "WHAT'S NEXT" TEXT */}
           <p className="text-xs text-gray-500 text-center">
-            You can review your details on the next page.
+            You can review your order details on the next page.
           </p>
         </form>
       </Card>

@@ -366,32 +366,30 @@ export default function FormWrapper() {
       {/* 2-Column Layout: Clean like EduBirdie */}
       <div className="grid grid-cols-1 lg:grid-cols-5 min-h-screen">
         {/* LEFT SIDE: 60% width, pure white */}
-        <div className="lg:col-span-3 bg-white px-12 py-8">
+        <div className="lg:col-span-3 bg-white px-6 sm:px-8 lg:px-12 py-8 sm:py-8 lg:py-8">
           {renderCurrentStep()}
         </div>
 
         {/* RIGHT SIDE: 40% width, gray background */}
-        <div className="lg:col-span-2 bg-gray-100 min-h-screen">
-          <div className="px-12 py-8">
-            <div className="sticky top-8">
-            <PricingSidebar
-  formData={{
-    serviceType: formData.serviceType,
-    email: formData.email || '',
-    subject: formData.subject || '',
-    documentType: formData.documentType || '',
-    pages: formData.pages || 0,
-    deadline: formData.deadline || '',
-    fullName: formData.fullName || '',
-    instructions: formData.instructions || '',
-    referenceStyle: formData.referenceStyle || ''
-  }}
-  currentStep={currentStep as any} // 🔧 TYPE FIX
-  completedSteps={completedSteps}
-/>
-            </div>
-          </div>
-        </div>
+<div className="lg:col-span-2 bg-gray-100 min-h-screen">
+<div className="sticky top-4 px-4 sm:px-8 lg:px-12 py-4 sm:py-6 lg:py-8 max-h-screen overflow-y-auto">
+    <PricingSidebar
+      formData={{
+        serviceType: formData.serviceType,
+        email: formData.email || '',
+        subject: formData.subject || '',
+        documentType: formData.documentType || '',
+        pages: formData.pages || 0,
+        deadline: formData.deadline || '',
+        fullName: formData.fullName || '',
+        instructions: formData.instructions || '',
+        referenceStyle: formData.referenceStyle || ''
+      }}
+      currentStep={currentStep as any}
+      completedSteps={completedSteps}
+    />
+  </div>
+</div>
       </div>
 
       {/* Exit Intent Modal */}

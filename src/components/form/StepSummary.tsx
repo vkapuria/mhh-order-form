@@ -101,10 +101,17 @@ export default function StepSummary({
         
         {/* Left side: All info in one row */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Step number */}
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Step {stepNumber}
-          </span>
+          {/* Step number - Visual icon on mobile, text on desktop */}
+          <div className="flex-shrink-0">
+            <img 
+              src={`/icons/${['one', 'two', 'three', 'four'][stepNumber - 1]}.svg`}
+              alt={`Step ${stepNumber}`}
+              className="w-6 h-6 sm:hidden"
+            />
+            <span className="hidden sm:inline text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Step {stepNumber}
+            </span>
+          </div>
           
           {/* Title */}
           <span className="text-sm font-semibold text-gray-900">{title}</span>
@@ -141,10 +148,10 @@ export default function StepSummary({
                 e.stopPropagation()
                 onEdit()
               }}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 sm:px-3 sm:py-1.5 px-2 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <PencilIcon className="w-3 h-3" />
-              Change
+              <PencilIcon className="w-4 h-4 sm:w-3 sm:h-3" />
+              <span className="hidden sm:inline">Change</span>
             </button>
           )}
           

@@ -81,7 +81,7 @@ export default function EmailCapture({
   const isValid = Boolean(fullName.trim() && email && validateEmail(email))
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
       {/* Accordion Summary */}
       {serviceType && (
         <StepSummary
@@ -95,11 +95,11 @@ export default function EmailCapture({
       )}
 
       {/* 🎯 MAIN FORM CARD WITH AUTO-SCROLL REF */}
-      <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
+      <Card ref={mainFormRef} className="p-4 sm:p-8 shadow-none sm:shadow-sm border-0 sm:border sm:border-gray-200 sm:rounded-xl bg-transparent sm:bg-white">
         {/* 🎯 LEFT-ALIGNED HEADER */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Who's this for?</h2>
-          <p className="text-gray-600 text-base">Quick details so we can personalize your quote</p>
+        <h2 className="text-xl font-bold text-gray-900 mb-1">Contact Information</h2>
+        <p className="text-gray-600 text-base">We need these details to deliver your completed work</p>
         </div>
 
         {/* Form */}
@@ -110,7 +110,7 @@ export default function EmailCapture({
             <div>
             <Label
   htmlFor="fullName"
-  className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2"  // ← Changed
+  className="text-base font-semibold text-black flex items-center gap-2 mb-2"  // ← Changed
 >
   <UserIcon className="w-5 h-5 text-gray-500" />  {/* ← Changed size */}
   Full Name
@@ -132,7 +132,7 @@ export default function EmailCapture({
             <div>
             <Label
   htmlFor="email"  
-  className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2"  // ← Changed
+  className="text-base font-semibold text-black flex items-center gap-2 mb-2"   // ← Changed
 >
   <EnvelopeIcon className="w-5 h-5 text-gray-500" />  {/* ← Changed size */}
   Email Address
@@ -161,15 +161,14 @@ export default function EmailCapture({
             <Button
               type="button"
               onClick={onBack}
-              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
               <ArrowLeftIcon className="w-4 h-4" />
               Back
             </Button>
             <Button
               type="submit"
               disabled={!isValid}
-              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
+              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
             >
               Continue to Assignment Details
               <ArrowRightIcon className="w-4 h-4" />

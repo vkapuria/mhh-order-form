@@ -108,7 +108,7 @@ export default function AssignmentDetails({
   }, [])
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
       {/* Accordion Summaries */}
       {previousData && (
         <>
@@ -136,7 +136,7 @@ export default function AssignmentDetails({
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-1">What do you need help with?</h2>
           <p className="text-gray-600 text-base">
-            Tell us about your assignment so we can match you with the perfect expert
+          Help us understand what you need so we can deliver quality work
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export default function AssignmentDetails({
             
             {/* LEFT: Subject */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+              <Label className="flex items-center gap-2 text-base font-semibold text-black mb-1">
                 <AcademicCapIcon className="w-5 h-5" />
                 Select Subject
               </Label>
@@ -172,7 +172,7 @@ export default function AssignmentDetails({
 
             {/* RIGHT: Document Type */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+              <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <DocumentTextIcon className="w-5 h-5" />
                 {serviceType === 'presentation' ? 'Assignment Type' : 'Type of paper'}
               </Label>
@@ -197,7 +197,7 @@ export default function AssignmentDetails({
 
           {/* ROW 2: Instructions (Full Width) */}
           <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-base font-medium text-gray-700">
+            <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
               <PencilSquareIcon className="w-5 h-5" />
               Assignment Instructions
             </Label>
@@ -221,16 +221,14 @@ export default function AssignmentDetails({
             <Button
               type="button"
               onClick={onBack}
-              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
               <ArrowLeftIcon className="w-4 h-4" />
               Back
             </Button>
             <Button 
               type="submit" 
               disabled={!isValid}
-              className="h-12 px-6 rounded-lg border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full">
               Continue to Final Details
               <ArrowRightIcon className="w-4 h-4" />
             </Button>
