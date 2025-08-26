@@ -60,6 +60,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased bg-gradient-to-br from-purple-50 via-white to-teal-50`}>
   <Header />
   {children}

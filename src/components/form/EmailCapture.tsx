@@ -231,10 +231,22 @@ export default function EmailCapture({
       )}
 
       <Card ref={mainFormRef} className="p-4 sm:p-8 shadow-none sm:shadow-sm border-0 sm:border sm:border-gray-200 sm:rounded-xl bg-transparent sm:bg-white">
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Contact Information</h2>
-          <p className="text-gray-600 text-base">We need these details to deliver your completed work</p>
-        </div>
+      <div className="mb-6">
+  <h2 className="text-xl font-bold text-gray-900 mb-1">Contact Information</h2>
+  <p className="text-gray-600 text-base">
+    We need<span 
+  className="relative inline-block font-medium text-gray-800"
+  style={{
+    backgroundImage: 'url(/icons/marker.svg)',
+    backgroundSize: '95% 40%',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center calc(100% + 2px)',
+    padding: '2px 4px 8px 4px',
+    transform: 'rotate(-1deg)',
+  }}
+>these details</span>to deliver your completed work
+  </p>
+</div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -347,8 +359,14 @@ export default function EmailCapture({
           </div>
 
           <p className="text-xs text-gray-500 text-center">
-            Next, you'll tell us about your assignment and deadline.
-          </p>
+  {fullName.trim() ? (
+    <>
+      Thanks, <span style={{ fontFamily: 'Caveat, cursive', fontSize: '16px', fontWeight: '600', color: '#374151' }}>{fullName.split(' ')[0]}</span>. Next, we'll collect the details of your assignment.
+    </>
+  ) : (
+    "Next, we'll collect the details of your assignment."
+  )}
+</p>
         </form>
       </Card>
     </div>

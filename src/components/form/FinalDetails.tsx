@@ -258,12 +258,22 @@ if (!pagesError && !deadlineError && !filesError) {
       {/* Main Form Card */}
       <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Final details</h2>
-          <p className="text-gray-600 text-base">
-            Set pages and deadline. You can attach files if needed.
-          </p>
-        </div>
+        <div className="mb-6">
+  <h2 className="text-xl font-bold text-gray-900 mb-1">Almost Done</h2>
+  <p className="text-gray-600 text-base">
+    Set pages and deadline. You can<span 
+      className="relative inline-block font-medium text-gray-800"
+      style={{
+        backgroundImage: 'url(/icons/marker.svg)',
+        backgroundSize: '95% 40%',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center calc(100% + 2px)',
+        padding: '2px 4px 8px 4px',
+        transform: 'rotate(-1deg)',
+      }}
+    >attach files</span>if needed.
+  </p>
+</div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-8">

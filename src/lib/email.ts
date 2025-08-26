@@ -126,136 +126,135 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
 
   return `
     <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Pre-Order Alert</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5;">
-        <div style="max-width: 700px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #8800e9 0%, #6600cc 100%); color: white; padding: 25px; text-align: center;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: bold;">🔔 Pre-Order Alert</h1>
-                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 16px;">New order inquiry received - customer details below</p>    
-            </div>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pre-Order Alert</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5;">
+  <div style="max-width: 700px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
 
-            <!-- Content -->
-            <div style="padding: 25px;">
-                <p style="font-size: 16px; margin-bottom: 20px; color: #555;">
-                    A customer has completed the order form and is currently on the checkout page. Here are the details:
-                </p>
+    <!-- Header -->
+    <div style="background: #000; color: white; padding: 25px; text-align: center;">
+      <img src="https://domyhomework.b-cdn.net/wp-content/uploads/2025/06/DMH-New-Logo.png" alt="DoMyHomework Logo" style="max-height: 50px; display: block; margin: 0 auto 10px auto;">
+      <h1 style="margin: 0; font-size: 22px; font-weight: bold;">🔔 Pre-Order Alert</h1>
+      <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 15px;">New order inquiry received - customer details below</p>
+    </div>
 
-                <!-- Contact Information Section -->
-                <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 18px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
-                    👤 Contact Information
-                </h3>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5;">
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold; width: 180px;">Name</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${data.customerName}</td>
-                    </tr>
-                    <tr>
-<tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Email</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">
-                            <a href="mailto:${data.customerEmail}" style="color: #8800e9; text-decoration: none;">${data.customerEmail}</a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Country</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">🌍 ${data.customerCountry}</td>
-                    </tr>
-                </table>
+    <!-- Content -->
+    <div style="padding: 25px;">
 
-                <!-- Order Details Section -->
-                <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 18px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
-                    📝 Order Details
-                </h3>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5;">
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold; width: 180px;">Order ID</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; font-family: monospace; color: #8800e9; font-weight: bold;">#${data.orderId.slice(0, 8).toUpperCase()}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Service Type</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-transform: capitalize;">${data.serviceType}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Subject</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-transform: capitalize;">${data.subject}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Document Type</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-transform: capitalize;">${data.documentType.replace(/_/g, ' ')}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Pages</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${data.pages} page${data.pages !== 1 ? 's' : ''}</td>
-                    </tr>
-                    <tr>
-<tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Deadline</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${data.deadline} day${data.deadline !== '1' ? 's' : ''} (${getDeadlineDate(data.deadline)})</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Reference Style</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-transform: uppercase;">${data.referenceStyle}</td>
-                    </tr>
-                    ${data.instructions ? `
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Instructions</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; font-style: italic;">${data.instructions}</td>
-                    </tr>
-                    ` : ''}
-                    ${filesSection}
-                </table>
+      <p style="font-size: 15px; margin-bottom: 20px; color: #555;">
+        A customer has completed the order form and is currently on the checkout page. Here are the details:
+      </p>
 
-                <!-- Pricing Section -->
-                <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 18px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
-                    💰 Pricing Breakdown
-                </h3>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5;">
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold; width: 180px;">Base Price</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">$${data.basePrice.toFixed(2)}</td>
-                    </tr>
-                    ${data.savings > 0 ? `
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Discount</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; color: #10b981;">-$${data.savings.toFixed(2)}</td>
-                    </tr>
-                    ` : ''}
-                    ${data.rushFee > 0 ? `
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; background: #f9f9f9; font-weight: bold;">Rush Fee</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e5e5e5; color: #f59e0b;">+$${data.rushFee.toFixed(2)}</td>
-                    </tr>
-                    ` : ''}
-                    <tr style="background: #8800e9; color: white;">
-                        <td style="padding: 15px; font-weight: bold; font-size: 16px;">Total Price</td>
-                        <td style="padding: 15px; font-weight: bold; font-size: 18px;">$${data.totalPrice.toFixed(2)}</td>
-                    </tr>
-                </table>
+      <!-- Contact Information -->
+      <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
+        👤 Contact Information
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5; font-size: 14px;">
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold; width: 160px;">Name</td>
+          <td style="padding: 12px;">${data.customerName}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Email</td>
+          <td style="padding: 12px;">
+            <a href="mailto:${data.customerEmail}" style="color: #8800e9; text-decoration: none;">${data.customerEmail}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Country</td>
+          <td style="padding: 12px;">🌍 ${data.customerCountry}</td>
+        </tr>
+      </table>
 
-                <!-- Action Item -->
-                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 20px; margin-top: 25px;">
-                    <h4 style="margin: 0 0 10px 0; color: #92400e; font-size: 16px;">⚠️ Action Required</h4>
-                    <p style="margin: 0; color: #92400e;">
-                        The customer is currently on the checkout page. Follow up if payment is not completed within 30 minutes.
-                    </p>
-                </div>
-            </div>
+      <!-- Order Details -->
+      <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
+        📝 Order Details
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5; font-size: 14px;">
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold; width: 160px;">Order ID</td>
+          <td style="padding: 12px; font-family: monospace; color: #8800e9; font-weight: bold;">#${data.orderId.slice(0, 8).toUpperCase()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Service Type</td>
+          <td style="padding: 12px; text-transform: capitalize;">${data.serviceType}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Subject</td>
+          <td style="padding: 12px; text-transform: capitalize;">${data.subject}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Document Type</td>
+          <td style="padding: 12px; text-transform: capitalize;">${data.documentType.replace(/_/g, ' ')}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Pages</td>
+          <td style="padding: 12px;">${data.pages} page${data.pages !== 1 ? 's' : ''}</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Deadline</td>
+          <td style="padding: 12px;">${data.deadline} day${data.deadline !== '1' ? 's' : ''} (${getDeadlineDate(data.deadline)})</td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Reference Style</td>
+          <td style="padding: 12px; text-transform: uppercase;">${data.referenceStyle}</td>
+        </tr>
+        ${data.instructions ? `
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Instructions</td>
+          <td style="padding: 12px; font-style: italic;">${data.instructions}</td>
+        </tr>
+        ` : ''}
+        ${filesSection}
+      </table>
 
-            <!-- Footer -->
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e5e5;">
-                <p style="margin: 0; color: #666; font-size: 14px;">
-                    Academic Excellence Hub | Admin Notification System
-                </p>
-            </div>
-        </div>
-    </body>
-    </html>
+      <!-- Pricing -->
+      <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
+        💰 Pricing Breakdown
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5; font-size: 14px;">
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold; width: 160px;">Base Price</td>
+          <td style="padding: 12px;">$${data.basePrice.toFixed(2)}</td>
+        </tr>
+        ${data.savings > 0 ? `
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Discount</td>
+          <td style="padding: 12px; color: #10b981;">-$${data.savings.toFixed(2)}</td>
+        </tr>
+        ` : ''}
+        ${data.rushFee > 0 ? `
+        <tr>
+          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Rush Fee</td>
+          <td style="padding: 12px; color: #f59e0b;">+$${data.rushFee.toFixed(2)}</td>
+        </tr>
+        ` : ''}
+        <tr style="background: #8800e9; color: white;">
+          <td style="padding: 15px; font-weight: bold; font-size: 15px;">Total Price</td>
+          <td style="padding: 15px; font-weight: bold; font-size: 17px;">$${data.totalPrice.toFixed(2)}</td>
+        </tr>
+      </table>
+
+      <!-- Action Required -->
+      <div style="background: #f9f9f9; border-left: 4px solid #dc2626; border-radius: 6px; padding: 15px; margin-top: 20px;">
+        <p style="margin: 0; color: #b91c1c; font-size: 14px;">
+          ⚠️ The customer is currently on the checkout page. Follow up if payment is not completed within 30 minutes.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f8f9fa; padding: 15px; text-align: center; border-top: 1px solid #e5e5e5;">
+      <p style="margin: 0; color: #666; font-size: 13px;">
+        DoMyHomework | Admin Notification System 
+      </p>
+    </div>
+  </div>
+</body>
+</html>
   `
 }
 
@@ -263,104 +262,110 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
 function generateCustomerEmailHTML(data: OrderEmailData): string {
   return `
     <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Complete Your Order</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5;">
-        <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #8800e9 0%, #6600cc 100%); color: white; padding: 25px; text-align: center;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Almost Done! 🎓</h1>
-                <p style="margin: 8px 0 0 0; opacity: 0.9; font-size: 16px;">Your order details are safely saved</p>
-            </div>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Complete Your Order</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    
+    <!-- Header -->
+    <div style="background: #000; color: white; padding: 25px; text-align: center;">
+      <img 
+  src="https://domyhomework.b-cdn.net/wp-content/uploads/2025/06/DMH-New-Logo.png" 
+  alt="DoMyHomework Logo" 
+  style="max-height: 32px; margin-bottom: 10px; filter: brightness(0) invert(1);" 
+/>
 
-            <!-- Content -->
-            <div style="padding: 30px;">
-                <p style="font-size: 16px; margin-bottom: 20px;">
-                    Hi <strong>${data.customerName}</strong>,
-                </p>
-                
-                <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6;">
-                    Thank you for choosing Academic Excellence Hub! Your order details have been securely saved, and you're just one step away from getting expert help with your ${data.serviceType} project.
-                </p>
+      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Almost Done! 🎓</h1>
+      <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 15px;">Your order details are safely saved</p>
+    </div>
 
-                <!-- Order Summary -->
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0;">
-                    <h3 style="margin: 0 0 15px 0; color: #8800e9; font-size: 18px;">📋 Your Order Summary</h3>
-                    <table style="width: 100%; font-size: 14px;">
-                        <tr>
-                            <td style="padding: 5px 0; color: #666;">Order ID:</td>
-                            <td style="padding: 5px 0; font-weight: bold; font-family: monospace;">#${data.orderId.slice(0, 8).toUpperCase()}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 5px 0; color: #666;">Service:</td>
-                            <td style="padding: 5px 0; text-transform: capitalize;">${data.serviceType}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 5px 0; color: #666;">Subject:</td>
-                            <td style="padding: 5px 0; text-transform: capitalize;">${data.subject}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 5px 0; color: #666;">Pages:</td>
-                            <td style="padding: 5px 0;">${data.pages}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 5px 0; color: #666;">Deadline:</td>
-                            <td style="padding: 5px 0;">${data.deadline} day${data.deadline !== '1' ? 's' : ''}</td>
-                        </tr>
-                        <tr style="border-top: 1px solid #ddd; font-weight: bold;">
-                            <td style="padding: 10px 0 5px 0; color: #8800e9;">Total:</td>
-                            <td style="padding: 10px 0 5px 0; color: #8800e9; font-size: 16px;">$${data.totalPrice.toFixed(2)}</td>
-                        </tr>
-                    </table>
-                </div>
+    <!-- Content -->
+    <div style="padding: 30px;">
+      <p style="font-size: 16px; margin-bottom: 20px;">
+        Hi <strong>${data.customerName}</strong>,
+      </p>
+      
+      <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6; color:#555;">
+        Thank you for choosing DoMyHomework! Your order details have been securely saved, and you're just one step away from getting expert help with your ${data.serviceType} project.
+      </p>
 
-                <!-- CTA Button -->
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="${data.checkoutUrl}" style="display: inline-block; background: #8800e9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: background 0.3s;">
-                        Complete Your Payment →
-                    </a>
-                </div>
+      <!-- Order Summary -->
+      <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0;">
+        <h3 style="margin: 0 0 15px 0; color: #8800e9; font-size: 18px;">📋 Your Order Summary</h3>
+        <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 6px 0; color: #666;">Order ID:</td>
+            <td style="padding: 6px 0; font-weight: bold; font-family: monospace;">#${data.orderId.slice(0, 8).toUpperCase()}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #666;">Service:</td>
+            <td style="padding: 6px 0; text-transform: capitalize;">${data.serviceType}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #666;">Subject:</td>
+            <td style="padding: 6px 0; text-transform: capitalize;">${data.subject}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #666;">Pages:</td>
+            <td style="padding: 6px 0;">${data.pages}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #666;">Deadline:</td>
+            <td style="padding: 6px 0;">${data.deadline} day${data.deadline !== '1' ? 's' : ''}</td>
+          </tr>
+          <tr style="border-top: 1px solid #ddd; font-weight: bold;">
+            <td style="padding: 10px 0 5px 0; color: #8800e9;">Total:</td>
+            <td style="padding: 10px 0 5px 0; color: #8800e9; font-size: 16px;">$${data.totalPrice.toFixed(2)}</td>
+          </tr>
+        </table>
+      </div>
 
-                <p style="font-size: 14px; color: #666; text-align: center; margin-top: 20px;">
-                    💡 <strong>Tip:</strong> Save this email! You can return to complete your payment anytime using the button above.
-                </p>
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${data.checkoutUrl}" style="display: inline-block; background: #8800e9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+          Complete Your Payment
+        </a>
+      </div>
 
-                <!-- Guarantees -->
-                <div style="border-top: 1px solid #e5e5e5; margin-top: 30px; padding-top: 20px;">
-                    <h4 style="color: #8800e9; margin: 0 0 15px 0; font-size: 16px;">✅ Our Guarantees</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                        <div style="flex: 1; min-width: 200px; text-align: center; padding: 15px; background: #f0f9ff; border-radius: 6px;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">⏰</div>
-                            <div style="font-size: 14px; color: #0369a1; font-weight: 500;">On-Time Delivery</div>
-                        </div>
-                        <div style="flex: 1; min-width: 200px; text-align: center; padding: 15px; background: #f0fdf4; border-radius: 6px;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">🛡️</div>
-                            <div style="font-size: 14px; color: #166534; font-weight: 500;">100% Original Work</div>
-                        </div>
-                        <div style="flex: 1; min-width: 200px; text-align: center; padding: 15px; background: #fefce8; border-radius: 6px;">
-                            <div style="font-size: 24px; margin-bottom: 8px;">🔄</div>
-                            <div style="font-size: 14px; color: #a16207; font-weight: 500;">Free Revisions</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <p style="font-size: 14px; color: #666; text-align: center; margin-top: 20px;">
+        💡 <strong>Tip:</strong> Save this email! You can return to complete your payment anytime using the button above.
+      </p>
 
-            <!-- Footer -->
-            <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e5e5;">
-                <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-                    Questions? Reply to this email or contact us anytime.
-                </p>
-                <p style="margin: 0; color: #999; font-size: 12px;">
-                    Academic Excellence Hub | Professional Academic Services
-                </p>
-            </div>
+      <!-- Guarantees -->
+      <div style="border-top: 1px solid #e5e5e5; margin-top: 30px; padding-top: 20px;">
+        <h4 style="color: #8800e9; margin: 0 0 15px 0; font-size: 16px;">✅ Our Guarantees</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+          <div style="flex: 1; min-width: 160px; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 6px;">
+            <div style="font-size: 22px; margin-bottom: 8px;">⏰</div>
+            <div style="font-size: 14px; font-weight: 500; color:#333;">On-Time Delivery</div>
+          </div>
+          <div style="flex: 1; min-width: 160px; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 6px;">
+            <div style="font-size: 22px; margin-bottom: 8px;">🛡️</div>
+            <div style="font-size: 14px; font-weight: 500; color:#333;">100% Original Work</div>
+          </div>
+          <div style="flex: 1; min-width: 160px; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 6px;">
+            <div style="font-size: 22px; margin-bottom: 8px;">🔄</div>
+            <div style="font-size: 14px; font-weight: 500; color:#333;">Free Revisions</div>
+          </div>
         </div>
-    </body>
-    </html>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e5e5;">
+      <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
+        Questions? Reply to this email or contact us anytime.
+      </p>
+      <p style="margin: 0; color: #999; font-size: 12px;">
+        DoMyHomework | Professional Homework Help Services
+      </p>
+    </div>
+  </div>
+</body>
+</html>
   `
 }
 

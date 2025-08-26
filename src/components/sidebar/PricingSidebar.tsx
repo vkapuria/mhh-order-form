@@ -23,6 +23,7 @@ import {
   EnvelopeIcon,
   UserIcon,
   PencilSquareIcon,
+  ShoppingCartIcon,
 } from '@heroicons/react/24/outline'
 import {
   TagIcon,
@@ -124,15 +125,19 @@ function TopMotivationBar({
   } else if (step === 'assignment') {
     pct = 66
     if (firstName) {
+      title = `Great start, ${firstName}!`
+    } else {
+      title = 'Tell us about your assignment'
+    }
+    sub = 'Share your assignment details and requirements.'
+  } else if (step === 'details') {
+    pct = 90
+    if (firstName) {
       title = `Almost done, ${firstName} ✨`
     } else {
-      title = 'Almost done ✨'
+      title = 'Almost done ✨'  
     }
     sub = 'Set your deadline & pages to see your price.'
-  } else if (step === 'details') {
-    title = 'Review & confirm.'
-    sub = 'Live price reflects your selections.'
-    pct = 90
   }
   
   return (
@@ -366,56 +371,53 @@ function PricingSidebarBody({ formData }: { formData: any }) {
             </p>
           </div>
           <Separator className="my-4" />
-          <div className="space-y-2 text-sm">
-  <BreakdownRow label="Base Price" value={formatCurrency(pricing.basePrice)} />
-  
-  {/* Show ALL discounts, no $10 threshold! */}
-  {pricing.savings > 0 && (
-    <BreakdownRow 
-      label={`${pricing.discountTier} Discount`} 
-      value={`-${formatCurrency(pricing.savings)}`} 
-      color="green" 
-    />
-  )}
-  
-  {/* Show rush charges if they exist */}
-  {pricing.rushFee > 0 && (
-    <BreakdownRow 
-      label={`Rush Charges (+${pricing.rushFeePercentage}%)`} 
-      value={`+${formatCurrency(pricing.rushFee)}`} 
-      color="orange" 
-    />
-  )}
-</div>
+          <div className="space-y-2 text-sm mb-6">
+            <BreakdownRow label="Base Price" value={formatCurrency(pricing.basePrice)} />
+            
+            {pricing.savings > 0 && (
+              <BreakdownRow 
+                label={`${pricing.discountTier} Discount`} 
+                value={`-${formatCurrency(pricing.savings)}`} 
+                color="green" 
+              />
+            )}
+            
+            {pricing.rushFee > 0 && (
+              <BreakdownRow 
+                label={`Rush Charges (+${pricing.rushFeePercentage}%)`} 
+                value={`+${formatCurrency(pricing.rushFee)}`} 
+                color="orange" 
+              />
+            )}
+          </div>
+          
+          {/* Checkout Button Inside Card */}
+          <button className="w-full h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 font-medium">
+            <ShoppingCartIcon className="w-5 h-5" />
+            Continue to Checkout
+          </button>
         </CardContent>
       </Card>
-
-      {/* Value Proposition Card */}
-      <Card className="p-5 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="space-y-3">
-          {pricing.savings > 0 && (
+  
+      {/* Value Proposition Card - Only show if there's content */}
+      {pricing.savings > 0 && (
+        <Card className="p-5 rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm text-green-700">
               <TagIcon className="w-5 h-5 flex-shrink-0"/>
               <span>You saved <strong>{formatCurrency(pricing.savings)}</strong> with your volume discount.</span>
             </div>
-          )}
-          {saveVsMarket > 0 && (
-            <div className="flex items-center gap-3 text-sm text-gray-700">
-              <TagIcon className="w-5 h-5 flex-shrink-0"/>
-              <span>Save <strong>{formatCurrency(saveVsMarket)}</strong> vs competitors</span>
-            </div>
-          )}
-        </div>
-      </Card>
-
+          </div>
+        </Card>
+      )}
+  
       {/* Trust Badges */}
       <div className="flex justify-center items-center gap-6 pt-2">
         <TrustBadge icon={ShieldCheckIcon} text="SSL Secure Checkout" />
         <TrustBadge icon={CheckCircleIcon} text="Money-Back Guarantee" />
       </div>
     </div>
-  );
-}
+  );} 
 
 // ==================== MAIN COMPONENT ====================
 export default function PricingSidebar({ formData, currentStep }: PricingSidebarProps) {
@@ -435,14 +437,22 @@ export default function PricingSidebar({ formData, currentStep }: PricingSidebar
     <div className="space-y-6">{firstCard}</div>
   )
 
-  return (
-    <div className="space-y-4">
+  // Check if we should show pricing
+const readyForPrice = !!formData.serviceType && !!formData.deadline && (formData.pages || 0) > 0;
+const showPricing = currentStep === 'details' && readyForPrice;
+
+return (
+  <div className="space-y-4">
+    {!showPricing && (
       <TopMotivationBar
         step={currentStep}
         name={formData.fullName}
         email={formData.email}
       />
+    )}
+    <div className={showPricing ? "animate-slideUp" : ""}>
       {content}
     </div>
-  )
+  </div>
+)
 }
