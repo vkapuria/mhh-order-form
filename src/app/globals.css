@@ -309,3 +309,11 @@ textarea:focus,
   border: 2px solid #000000 !important;
   outline: none !important;
 }
+
+/* Prevent mobile keyboard layout shifts */
+@supports (-webkit-touch-callout: none) {
+  .form-container {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}

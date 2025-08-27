@@ -302,6 +302,11 @@ export default function EmailCapture({
                 <Input
                   id="email"
                   type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="email"
+                  spellCheck="false"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
                   onBlur={handleEmailBlur}

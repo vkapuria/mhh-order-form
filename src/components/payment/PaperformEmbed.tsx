@@ -1,4 +1,3 @@
-// src/components/payment/PaperformEmbed.tsx
 'use client'
 
 import { useEffect, useRef } from 'react'
@@ -8,7 +7,7 @@ interface PaperformEmbedProps {
   prefillData?: {
     name?: string
     email?: string
-    amount?: number  // We receive as amount
+    amount?: number
     orderId?: string
   }
 }
@@ -28,9 +27,8 @@ export default function PaperformEmbed({ formId, prefillData }: PaperformEmbedPr
       params.append('email', prefillData.email)
     }
     if (prefillData?.amount) {
-      params.append('price', prefillData.amount.toString())  // Changed to 'price'
+      params.append('price', prefillData.amount.toString())
     }
-    // Skip order_id since you don't have that field
 
     // Create the Paperform div with prefill parameters
     if (containerRef.current) {
@@ -50,8 +48,8 @@ export default function PaperformEmbed({ formId, prefillData }: PaperformEmbedPr
         script.async = true
         document.body.appendChild(script)
       } else {
-        // Re-initialize if script already exists
-        if (window.Paperform) {
+        // Re-initialize if script already exists (with safety check)
+        if (window.Paperform && typeof window.Paperform.init === 'function') {
           window.Paperform.init()
         }
       }
