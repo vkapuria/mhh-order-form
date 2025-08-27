@@ -256,7 +256,7 @@ if (!pagesError && !deadlineError && !filesError) {
       )}
 
       {/* Main Form Card */}
-      <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
+      <Card ref={mainFormRef} className="px-0 py-8 border-0 shadow-none lg:p-8 lg:shadow-sm lg:border lg:border-gray-200">
         {/* Header */}
         <div className="mb-6">
   <h2 className="text-xl font-bold text-gray-900 mb-1">Almost Done</h2>
@@ -276,10 +276,10 @@ if (!pagesError && !deadlineError && !filesError) {
 </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
           
           {/* Row 1: Pages + Deadline */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             
             {/* Pages Field */}
             <div className="space-y-3">
@@ -293,7 +293,7 @@ if (!pagesError && !deadlineError && !filesError) {
                   type="button"
                   onClick={() => handlePagesChange(Math.max(1, (data.pages || 1) - 1))}
                   disabled={(data.pages || 0) <= 1}
-                  className="w-10 h-9 flex items-center justify-center rounded-xl border border-gray-400 hover:bg-gray-50 disabled:opacity-40"
+                  className="w-12 flex items-center justify-center rounded-lg hover:bg-gray-50 disabled:opacity-40" style={{ height: '54px', border: '1px solid #0f0f10' }}
                 >
                   <MinusIcon className="w-4 h-4 text-gray-600" />
                 </button>
@@ -306,7 +306,7 @@ if (!pagesError && !deadlineError && !filesError) {
       const val = parseInt(e.target.value) || 0
       handlePagesChange(Math.max(0, Math.min(100, val)))
     }}
-    className="h-9 text-base text-center border-gray-400 focus:border-gray-500 rounded-xl focus:ring-0 focus-visible:ring-0"
+    className="text-base text-center focus:border-gray-500 rounded-lg focus:ring-0 focus-visible:ring-0" style={{ height: '54px', border: '1px solid #0f0f10' }}
     placeholder="0"
     min={1}
     max={100}
@@ -317,7 +317,7 @@ if (!pagesError && !deadlineError && !filesError) {
                   type="button"
                   onClick={() => handlePagesChange(Math.min(100, (data.pages || 0) + 1))}
                   disabled={(data.pages || 0) >= 100}
-                  className="w-10 h-9 flex items-center justify-center rounded-xl border border-gray-400 hover:bg-gray-50 disabled:opacity-40"
+                  className="w-12 flex items-center justify-center rounded-lg hover:bg-gray-50 disabled:opacity-40" style={{ height: '54px', border: '1px solid #0f0f10' }}
                 >
                   <PlusIcon className="w-4 h-4 text-gray-600" />
                 </button>
@@ -333,7 +333,7 @@ if (!pagesError && !deadlineError && !filesError) {
               
               {/* Help Text */}
               {!errors.pages && (
-                <p className="text-xs text-gray-500">~275 words per page.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>~275 words per page.</p>
               )}
             </div>
 
@@ -349,7 +349,7 @@ if (!pagesError && !deadlineError && !filesError) {
                   value={data.deadline} 
                   onValueChange={handleDeadlineChange}
                 >
-                  <SelectTrigger className="w-full h-11 text-base border-gray-300 focus:border-gray-500 rounded-xl">
+                  <SelectTrigger className="w-full text-base focus:border-gray-500 rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}                  >
                     <SelectValue placeholder="Select a deadline" />
                   </SelectTrigger>
                   <SelectContent>
@@ -386,13 +386,13 @@ if (!pagesError && !deadlineError && !filesError) {
               
               {/* Help Text */}
               {!errors.deadline && (
-                <p className="text-xs text-gray-500">Tighter deadlines include a rush fee.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>Tighter deadlines include a rush fee.</p>
               )}
             </div>
           </div>
 
           {/* Row 2: File Upload Decision (Full Width) */}
-<div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
   
   {/* File Upload Choice - Mandatory */}
   <div className="space-y-3">
@@ -402,39 +402,49 @@ if (!pagesError && !deadlineError && !filesError) {
     </Label>
     
     {/* Yes/No Toggle Buttons */}
-<div className="flex gap-4">
-  <button
-    type="button"
-    onClick={(e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      onChange('hasFiles', true)
-    }}
-    className={`flex-1 h-12 rounded-xl border-2 font-medium transition-all ${
-      data.hasFiles === true 
-        ? 'border-black bg-black text-white' 
-        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-    }`}
-  >
-    📎 Yes, I have files to attach
-  </button>
+<div className="flex gap-8">
+<button
+  type="button"
+  onClick={(e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onChange('hasFiles', true)
+  }}
+  className={`flex-1 font-medium transition-all rounded-lg ${
+    data.hasFiles === true 
+      ? 'bg-black text-white' 
+      : 'bg-white text-gray-700 hover:bg-gray-50'
+  }`}
+  style={{ 
+    height: '54px', 
+    border: data.hasFiles === true ? '1px solid #000000' : '1px solid #0f0f10'
+  }}
+>
+  <span className="sm:hidden">📎 Yes</span>
+  <span className="hidden sm:inline">📎 Yes, I have files to attach</span>
+</button>
   
-  <button
-    type="button"
-    onClick={(e) => {
-      e.preventDefault()
-      e.stopPropagation()
-      onChange('hasFiles', false)
-      onChange('files', [])
-    }}
-    className={`flex-1 h-12 rounded-xl border-2 font-medium transition-all ${
-      data.hasFiles === false 
-        ? 'border-black bg-black text-white' 
-        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
-    }`}
-  >
-    ❌ No files to attach
-  </button>
+<button
+  type="button"
+  onClick={(e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onChange('hasFiles', false)
+    onChange('files', [])
+  }}
+  className={`flex-1 font-medium transition-all rounded-lg ${
+    data.hasFiles === false 
+      ? 'bg-black text-white' 
+      : 'bg-white text-gray-700 hover:bg-gray-50'
+  }`}
+  style={{ 
+    height: '54px', 
+    border: data.hasFiles === false ? '1px solid #000000' : '1px solid #0f0f10'
+  }}
+>
+  <span className="sm:hidden">❌ No</span>
+  <span className="hidden sm:inline">❌ No files to attach</span>
+</button>
 </div>
 
     {/* Error for not selecting */}
@@ -448,7 +458,7 @@ if (!pagesError && !deadlineError && !filesError) {
 
   {/* File Upload Component - Full Width */}
   {data.hasFiles === true && (
-    <div className="border-t pt-6">
+    <div className="border-t pt-4 lg:pt-6">
       <FileUpload
         files={data.files || []}
         onChange={(files) => {
@@ -513,15 +523,15 @@ if (!pagesError && !deadlineError && !filesError) {
 
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
-            <Button
-              type="button"
-              onClick={onBack}
-              disabled={isSubmitting}
-              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
-              Back
-            </Button>
+          <Button
+  type="button"
+  onClick={onBack}
+  disabled={isSubmitting}
+  className="h-12 px-6 rounded-lg bg-black text-white hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
+>
+  <ArrowLeftIcon className="w-4 h-4" />
+  Back
+</Button>
             
             <Button 
               type="submit" 
@@ -542,7 +552,7 @@ if (!pagesError && !deadlineError && !filesError) {
             </Button>
           </div>
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-800 text-center">
             You can review your order details on the next page.
           </p>
         </form>

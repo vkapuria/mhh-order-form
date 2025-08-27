@@ -268,7 +268,7 @@ export default function EmailCapture({
                   onChange={(e) => handleNameChange(e.target.value)}
                   onBlur={handleNameBlur}
                   placeholder="Enter your name"
-                  className="h-11 rounded-xl focus:ring-0 focus-visible:ring-0 pl-4 pr-4 border-gray-300 focus:border-gray-500"
+                  className="rounded-lg focus:ring-0 focus-visible:ring-0 pl-4 pr-4 focus:border-gray-500" style={{ height: '54px', border: '1px solid #0f0f10' }}
                   autoFocus
                   aria-describedby={errors.fullName ? "fullName-error" : "fullName-help"}
                   aria-invalid={!!errors.fullName}
@@ -283,9 +283,9 @@ export default function EmailCapture({
               )}
 
               {!errors.fullName && (
-                <p id="fullName-help" className="text-xs text-gray-500">
-                    We'll use this for your order confirmation.
-                </p>
+                <p id="fullName-help" className="text-xs text-gray-800 text-center" style={{ marginTop: '-4px' }}>
+                What should we call you?
+              </p>           
               )}
             </div>
 
@@ -306,7 +306,7 @@ export default function EmailCapture({
                   onChange={(e) => handleEmailChange(e.target.value)}
                   onBlur={handleEmailBlur}
                   placeholder="your.email@example.com"
-                  className="h-11 rounded-xl focus:ring-0 focus-visible:ring-0 pl-4 pr-12 border-gray-400 focus:border-gray-500"
+                  className="rounded-lg focus:ring-0 focus-visible:ring-0 pl-4 pr-12 focus:border-gray-500" style={{ height: '54px', border: '1px solid #0f0f10' }}
                   aria-describedby={errors.email ? "email-error" : "email-help"}
                   aria-invalid={!!errors.email}
                 />
@@ -320,30 +320,30 @@ export default function EmailCapture({
               )}
 
               {!errors.email && (
-                <p id="email-help" className="text-xs text-gray-500">
-                  We'll send updates and your completed work here.
-                </p>
+                <p id="email-help" className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>
+                We'll send your completed work here.
+              </p>
               )}
             </div>
           </div>
 
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
-            <Button
-              type="button"
-              onClick={onBack}
-              disabled={isSubmitting}
-              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
-              Back
-            </Button>
+          <Button
+  type="button"
+  onClick={onBack}
+  disabled={isSubmitting}
+  className="px-6 rounded-lg bg-black text-white hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full" style={{ height: '54px', border: '1px solid #0f0f10' }}
+>
+  <ArrowLeftIcon className="w-4 h-4" />
+  Back
+</Button>
             
             <Button
               type="submit"
               disabled={!isValid || isSubmitting}
-              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="px-6 rounded-lg text-white disabled:bg-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full" style={{ height: '54px', backgroundColor: '#8800e9', border: '1px solid #8800e9' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7000d1'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#8800e9'}
+              >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -358,7 +358,7 @@ export default function EmailCapture({
             </Button>
           </div>
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-800 text-center">
   {fullName.trim() ? (
     <>
       Thanks, <span style={{ fontFamily: 'Caveat, cursive', fontSize: '16px', fontWeight: '600', color: '#374151' }}>{fullName.split(' ')[0]}</span>. Next, we'll collect the details of your assignment.

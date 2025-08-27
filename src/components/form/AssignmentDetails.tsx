@@ -388,7 +388,7 @@ export default function AssignmentDetails({
       )}
 
       {/* Main Form Card */}
-      <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
+      <Card ref={mainFormRef} className="px-0 py-8 border-0 shadow-none lg:p-8 lg:shadow-sm lg:border lg:border-gray-200">
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Provide Assignment Details</h2>
@@ -408,13 +408,13 @@ export default function AssignmentDetails({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
           
           {/* Row 1: Subject + Document Type */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             
             {/* Subject Field with Optgroups */}
-            <div className="space-y-3">
+            <div className="space-y-2 lg:space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <AcademicCapIcon className="w-5 h-5" />
                 Select Subject<span className="text-red-500">*</span>
@@ -428,7 +428,7 @@ export default function AssignmentDetails({
                     if (!isOpen) handleSubjectBlur()
                   }}
                 >
-                  <SelectTrigger className="w-full h-11 text-base border-gray-300 focus:border-gray-500 rounded-xl">
+                  <SelectTrigger className="w-full text-base focus:border-gray-500 rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
                     <SelectValue placeholder="Select a subject" />
                   </SelectTrigger>
                   <SelectContent>
@@ -458,7 +458,7 @@ export default function AssignmentDetails({
               
               {/* Help Text */}
               {!errors.subject && (
-                <p className="text-xs text-gray-500">We'll match a subject expert.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-4px' }}>We'll match you with a subject expert.</p>
               )}
             </div>
 
@@ -477,7 +477,7 @@ export default function AssignmentDetails({
                     if (!isOpen) handleDocumentTypeBlur()
                   }}
                 >
-                  <SelectTrigger className="w-full h-11 text-base border-gray-400 focus:border-gray-500 rounded-xl pr-12">
+                  <SelectTrigger className="w-full text-base focus:border-gray-500 rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -507,7 +507,7 @@ export default function AssignmentDetails({
               
               {/* Help Text */}
               {!errors.documentType && (
-                <p className="text-xs text-gray-500">Essay, report, presentation, and more.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>Essay, report, presentation, and more.</p>
               )}
             </div>
           </div>
@@ -525,7 +525,7 @@ export default function AssignmentDetails({
                 onChange={(e) => handleInstructionsChange(e.target.value)}
                 onBlur={handleInstructionsBlur}
                 placeholder="Paste your prompt, key points, or professor's rubric here…"
-                className="min-h-[120px] text-base border-gray-300 focus:border-gray-500 resize-none rounded-xl"
+                className="min-h-[140px] text-base focus:border-gray-500 resize-none rounded-lg" style={{ border: '1px solid #0f0f10' }}
                 rows={5}
               />
             </div>
@@ -540,28 +540,27 @@ export default function AssignmentDetails({
             
             {/* Help Text */}
             {!errors.instructions && (
-              <p className="text-xs text-gray-500">
-                Helpful: formatting, sources, or any must-follow guidance. (Minimum 20 characters)
-              </p>
+              <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-4px' }}>
+              Helpful: formatting, sources, or any must-follow guidance. (Minimum 20 characters)
+            </p>
             )}
           </div>
 
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
-            <Button
-              type="button"
-              onClick={onBack}
-              disabled={isSubmitting}
-              className="h-12 px-6 rounded-lg bg-gray-100 text-gray-900 hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
-              Back
-            </Button>
+          <Button
+  type="button"
+  onClick={onBack}
+  disabled={isSubmitting}
+  className="px-6 bg-black text-white hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}
+>
+  <ArrowLeftIcon className="w-4 h-4" />
+  Back
+</Button>
             <Button 
               type="submit" 
               disabled={!isValid || isSubmitting}
-              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
+              className="px-6 text-white hover:bg-gray-300 disabled:bg-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full rounded-lg" style={{ height: '54px', backgroundColor: '#8800e9', border: '1px solid #8800e9' }}            >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -576,7 +575,7 @@ export default function AssignmentDetails({
             </Button>
           </div>
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-gray-800 text-center">
             You can attach files in the next step.
           </p>
         </form>
