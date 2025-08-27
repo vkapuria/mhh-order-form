@@ -212,7 +212,7 @@ export default function EmailCapture({
 
   // 🎯 BETTER INPUT STYLING with proper icon spacing
   const getInputStyling = (field: 'fullName' | 'email') => {
-    return 'pl-12 pr-12 border-gray-400 focus:border-gray-500'
+    return 'pl-12 pr-12 border-gray-400'
   }
 
   const isValid = fullName.trim().length > 0 && email.trim().includes('@')
@@ -268,7 +268,7 @@ export default function EmailCapture({
                   onChange={(e) => handleNameChange(e.target.value)}
                   onBlur={handleNameBlur}
                   placeholder="Enter your name"
-                  className="rounded-lg focus:ring-0 focus-visible:ring-0 pl-4 pr-4 focus:border-gray-500" style={{ height: '54px', border: '1px solid #0f0f10' }}
+                  className="rounded-lg focus:ring-0 focus-visible:ring-0 pl-4 pr-4" style={{ height: '54px', border: '1px solid #0f0f10' }}
                   autoFocus
                   aria-describedby={errors.fullName ? "fullName-error" : "fullName-help"}
                   aria-invalid={!!errors.fullName}
@@ -306,7 +306,7 @@ export default function EmailCapture({
                   onChange={(e) => handleEmailChange(e.target.value)}
                   onBlur={handleEmailBlur}
                   placeholder="your.email@example.com"
-                  className="rounded-lg focus:ring-0 focus-visible:ring-0 pl-4 pr-12 focus:border-gray-500" style={{ height: '54px', border: '1px solid #0f0f10' }}
+                  className="rounded-lg focus:ring-0 focus-visible:ring-0 pl-4 pr-12" style={{ height: '54px', border: '1px solid #0f0f10' }}
                   aria-describedby={errors.email ? "email-error" : "email-help"}
                   aria-invalid={!!errors.email}
                 />

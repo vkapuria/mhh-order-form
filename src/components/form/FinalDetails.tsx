@@ -306,7 +306,7 @@ if (!pagesError && !deadlineError && !filesError) {
       const val = parseInt(e.target.value) || 0
       handlePagesChange(Math.max(0, Math.min(100, val)))
     }}
-    className="text-base text-center focus:border-gray-500 rounded-lg focus:ring-0 focus-visible:ring-0" style={{ height: '54px', border: '1px solid #0f0f10' }}
+    className="text-base text-center rounded-lg focus:ring-0 focus-visible:ring-0" style={{ height: '54px', border: '1px solid #0f0f10' }}
     placeholder="0"
     min={1}
     max={100}
@@ -349,7 +349,7 @@ if (!pagesError && !deadlineError && !filesError) {
                   value={data.deadline} 
                   onValueChange={handleDeadlineChange}
                 >
-                  <SelectTrigger className="w-full text-base focus:border-gray-500 rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}                  >
+                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}                  >
                     <SelectValue placeholder="Select a deadline" />
                   </SelectTrigger>
                   <SelectContent>
@@ -476,7 +476,7 @@ if (!pagesError && !deadlineError && !filesError) {
           {isValid && (
             <div className="lg:hidden bg-purple-50 border border-purple-200 rounded-xl p-6 mt-8">
               <h3 className="text-lg font-semibold text-purple-900 mb-4 text-center">
-                💰 Your Price Quote
+                💰 Your Price
               </h3>
               
               {(() => {

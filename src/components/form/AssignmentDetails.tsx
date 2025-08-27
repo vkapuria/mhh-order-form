@@ -428,7 +428,7 @@ export default function AssignmentDetails({
                     if (!isOpen) handleSubjectBlur()
                   }}
                 >
-                  <SelectTrigger className="w-full text-base focus:border-gray-500 rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
+                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
                     <SelectValue placeholder="Select a subject" />
                   </SelectTrigger>
                   <SelectContent>
@@ -477,7 +477,7 @@ export default function AssignmentDetails({
                     if (!isOpen) handleDocumentTypeBlur()
                   }}
                 >
-                  <SelectTrigger className="w-full text-base focus:border-gray-500 rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
+                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -525,7 +525,7 @@ export default function AssignmentDetails({
                 onChange={(e) => handleInstructionsChange(e.target.value)}
                 onBlur={handleInstructionsBlur}
                 placeholder="Paste your prompt, key points, or professor's rubric here…"
-                className="min-h-[140px] text-base focus:border-gray-500 resize-none rounded-lg" style={{ border: '1px solid #0f0f10' }}
+                className="min-h-[140px] text-base resize-none rounded-lg" style={{ border: '1px solid #0f0f10' }}
                 rows={5}
               />
             </div>

@@ -294,3 +294,18 @@ input[type="number"] {
     opacity: 1;
   }
 }
+
+/* Override focus states for all form inputs */
+input:focus,
+select:focus,
+textarea:focus,
+[role="combobox"]:focus {
+  border: 2px solid #000000 !important;
+  outline: none !important;
+}
+
+/* Also target Tailwind Select components specifically */
+[data-radix-select-trigger]:focus {
+  border: 2px solid #000000 !important;
+  outline: none !important;
+}
