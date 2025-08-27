@@ -92,7 +92,11 @@ function SelectLabel({
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("text-muted-foreground px-2 py-1.5 text-xs", className)}
+      className={cn(
+        "bg-gray-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide sticky top-0 z-10 shadow-sm rounded-md mx-1 mt-1",
+        className
+      )}
+      style={{ color: 'white' }}
       {...props}
     />
   )
@@ -171,6 +175,7 @@ function SelectScrollDownButton({
   )
 }
 
+// Add these to your existing select.tsx exports if not present:
 export {
   Select,
   SelectContent,

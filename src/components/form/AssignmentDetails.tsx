@@ -6,7 +6,15 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue,
+  SelectGroup,
+  SelectLabel 
+} from '@/components/ui/select'
 import {
   DocumentTextIcon,
   AcademicCapIcon,
@@ -47,34 +55,144 @@ interface ValidationState {
   instructions: 'idle' | 'valid' | 'invalid'
 }
 
-const allDocumentTypes = [
-  { value: 'essay', label: 'Essay' },
-  { value: 'research_paper', label: 'Research Paper' },
-  { value: 'term_paper', label: 'Term Paper' },
-  { value: 'case_study', label: 'Case Study' },
-  { value: 'dissertation', label: 'Dissertation' },
-  { value: 'thesis', label: 'Thesis' },
-  { value: 'report', label: 'Report' },
-  { value: 'article', label: 'Article' },
-  { value: 'business_presentation', label: 'Business Presentation' },
-  { value: 'academic_presentation', label: 'Academic Presentation' },
-  { value: 'pitch_deck', label: 'Pitch Deck' },
-  { value: 'other', label: 'Other' },
+// 🎓 COMPREHENSIVE SUBJECT LIST WITH OPTGROUPS
+const allSubjects = [
+  {
+    group: 'Business',
+    options: [
+      { value: 'accounting', label: 'Accounting' },
+      { value: 'administration', label: 'Administration' },
+      { value: 'business', label: 'Business' },
+      { value: 'economics', label: 'Economics' },
+      { value: 'marketing', label: 'Marketing' },
+      { value: 'finance', label: 'Finance' },
+      { value: 'management', label: 'Management' },
+    ]
+  },
+  {
+    group: 'Science',
+    options: [
+      { value: 'biology', label: 'Biology' },
+      { value: 'chemistry', label: 'Chemistry' },
+      { value: 'physics', label: 'Physics' },
+      { value: 'geology', label: 'Geology' },
+      { value: 'maths', label: 'Maths' },
+      { value: 'statistics', label: 'Statistics' },
+      { value: 'medicine', label: 'Medicine' },
+      { value: 'nursing', label: 'Nursing' },
+    ]
+  },
+  {
+    group: 'Social Sciences',
+    options: [
+      { value: 'communications', label: 'Communications' },
+      { value: 'education', label: 'Education' },
+      { value: 'law', label: 'Law' },
+      { value: 'political_science', label: 'Political Science' },
+      { value: 'psychology', label: 'Psychology' },
+      { value: 'sociology', label: 'Sociology' },
+    ]
+  },
+  {
+    group: 'Technology',
+    options: [
+      { value: 'computer_science', label: 'Computer Science' },
+      { value: 'engineering', label: 'Engineering' },
+      { value: 'database_management', label: 'Database Management' },
+      { value: 'information_technology', label: 'Information Technology' },
+    ]
+  },
+  {
+    group: 'Humanities',
+    options: [
+      { value: 'english', label: 'English' },
+      { value: 'history', label: 'History' },
+      { value: 'literature', label: 'Literature' },
+      { value: 'philosophy', label: 'Philosophy' },
+    ]
+  },
+  {
+    group: 'Other',
+    options: [
+      { value: 'other', label: 'Other' },
+    ]
+  }
 ]
 
-const allSubjects = [
-  { value: 'english', label: 'English' },
-  { value: 'psychology', label: 'Psychology' },
-  { value: 'business', label: 'Business' },
-  { value: 'nursing', label: 'Nursing' },
-  { value: 'history', label: 'History' },
-  { value: 'sociology', label: 'Sociology' },
-  { value: 'economics', label: 'Economics' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'management', label: 'Management' },
-  { value: 'education', label: 'Education' },
-  { value: 'computer_science', label: 'Computer Science' },
-  { value: 'other', label: 'Other' },
+// 📝 COMPREHENSIVE DOCUMENT TYPE LIST WITH OPTGROUPS
+const allDocumentTypes = [
+  {
+    group: 'Popular Choices',
+    options: [
+      { value: 'essay', label: 'Essay' },
+      { value: 'research_paper', label: 'Research Paper' },
+      { value: 'homework', label: 'Homework' },
+      { value: 'coursework', label: 'Coursework' },
+      { value: 'powerpoint', label: 'PowerPoint Presentation' },
+      { value: 'article_review', label: 'Article Review' },
+      { value: 'capstone_project', label: 'Capstone Project' },
+      { value: 'other', label: 'Other' },
+    ]
+  },
+  {
+    group: 'Essays',
+    options: [
+      { value: 'admission_essay', label: 'Admission Essay' },
+      { value: 'analytical_essay', label: 'Analytical Essay' },
+      { value: 'argumentative_essay', label: 'Argumentative Essay' },
+      { value: 'reflective_essay', label: 'Reflective Essay' },
+      { value: 'descriptive_essay', label: 'Descriptive Essay' },
+      { value: 'narrative_essay', label: 'Narrative Essay' },
+      { value: 'expository_essay', label: 'Expository Essay' },
+      { value: 'compare_contrast_essay', label: 'Compare & Contrast Essay' },
+    ]
+  },
+  {
+    group: 'Research',
+    options: [
+      { value: 'annotated_bibliography', label: 'Annotated Bibliography' },
+      { value: 'critical_analysis', label: 'Critical Analysis' },
+      { value: 'dissertation', label: 'Dissertation' },
+      { value: 'literature_review', label: 'Literature Review' },
+      { value: 'research_proposal', label: 'Research Proposal' },
+      { value: 'term_paper', label: 'Term Paper' },
+      { value: 'thesis', label: 'Thesis' },
+      { value: 'systematic_review', label: 'Systematic Review' },
+      { value: 'meta_analysis', label: 'Meta-analysis' },
+      { value: 'case_report', label: 'Case Report' },
+      { value: 'research_summary', label: 'Research Summary' },
+    ]
+  },
+  {
+    group: 'Business',
+    options: [
+      { value: 'business_plan', label: 'Business Plan' },
+      { value: 'case_study', label: 'Case Study' },
+      { value: 'report', label: 'Report' },
+      { value: 'feasibility_study', label: 'Feasibility Study' },
+      { value: 'white_paper', label: 'White Paper' },
+      { value: 'marketing_plan', label: 'Marketing Plan' },
+      { value: 'executive_summary', label: 'Executive Summary' },
+    ]
+  },
+  {
+    group: 'Creative Writing',
+    options: [
+      { value: 'short_story', label: 'Short Story' },
+      { value: 'script', label: 'Script' },
+      { value: 'poem', label: 'Poem' },
+      { value: 'playwriting', label: 'Playwriting' },
+    ]
+  },
+  {
+    group: 'STEM Assignments',
+    options: [
+      { value: 'math_problems', label: 'Math Problems' },
+      { value: 'lab_report', label: 'Lab Report' },
+      { value: 'data_analysis', label: 'Data Analysis' },
+      { value: 'programming_task', label: 'Programming Task' },
+    ]
+  }
 ]
 
 export default function AssignmentDetails({
@@ -273,21 +391,21 @@ export default function AssignmentDetails({
       <Card ref={mainFormRef} className="p-8 shadow-sm border-gray-200">
         {/* Header */}
         <div className="mb-6">
-  <h2 className="text-xl font-bold text-gray-900 mb-1">Provide Assignment Details</h2>
-  <p className="text-gray-600 text-base">
-    Help us understand what you need so we can deliver<span 
-      className="relative inline-block font-medium text-gray-800"
-      style={{
-        backgroundImage: 'url(/icons/marker.svg)',
-        backgroundSize: '95% 40%',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center calc(100% + 2px)',
-        padding: '2px 4px 8px 4px',
-        transform: 'rotate(-1deg)',
-      }}
-    >quality work</span>
-  </p>
-</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Provide Assignment Details</h2>
+          <p className="text-gray-600 text-base">
+            Help us understand what you need so we can deliver<span 
+              className="relative inline-block font-medium text-gray-800"
+              style={{
+                backgroundImage: 'url(/icons/marker.svg)',
+                backgroundSize: '95% 40%',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center calc(100% + 2px)',
+                padding: '2px 4px 8px 4px',
+                transform: 'rotate(-1deg)',
+              }}
+            >quality work</span>
+          </p>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -295,7 +413,7 @@ export default function AssignmentDetails({
           {/* Row 1: Subject + Document Type */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             
-            {/* Subject Field */}
+            {/* Subject Field with Optgroups */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <AcademicCapIcon className="w-5 h-5" />
@@ -314,10 +432,17 @@ export default function AssignmentDetails({
                     <SelectValue placeholder="Select a subject" />
                   </SelectTrigger>
                   <SelectContent>
-                    {allSubjects.map((subj) => (
-                      <SelectItem key={subj.value} value={subj.value}>
-                        {subj.label}
-                      </SelectItem>
+                    {allSubjects.map((group) => (
+                      <SelectGroup key={group.group}>
+                        <SelectLabel className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                          {group.group}
+                        </SelectLabel>
+                        {group.options.map((subject) => (
+                          <SelectItem key={subject.value} value={subject.value}>
+                            {subject.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
                   </SelectContent>
                 </Select>
@@ -337,7 +462,7 @@ export default function AssignmentDetails({
               )}
             </div>
 
-            {/* Document Type Field */}
+            {/* Document Type Field with Optgroups */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <DocumentTextIcon className="w-5 h-5" />
@@ -356,10 +481,17 @@ export default function AssignmentDetails({
                     <SelectValue placeholder="Select a type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {allDocumentTypes.map((doc) => (
-                      <SelectItem key={doc.value} value={doc.value}>
-                        {doc.label}
-                      </SelectItem>
+                    {allDocumentTypes.map((group) => (
+                      <SelectGroup key={group.group}>
+                        <SelectLabel className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                          {group.group}
+                        </SelectLabel>
+                        {group.options.map((doc) => (
+                          <SelectItem key={doc.value} value={doc.value}>
+                            {doc.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
                   </SelectContent>
                 </Select>

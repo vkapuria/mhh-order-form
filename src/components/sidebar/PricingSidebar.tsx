@@ -1,7 +1,8 @@
 'use client'
 
 // ==================== ALL IMPORTS AT TOP ====================
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
+import type { Variants } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -17,19 +18,13 @@ import {
   ShieldCheckIcon,
   StarIcon,
   LockClosedIcon,
-  DocumentTextIcon,
-  HashtagIcon,
-  AcademicCapIcon,
-  EnvelopeIcon,
-  UserIcon,
-  PencilSquareIcon,
+  CalendarIcon,
   ShoppingCartIcon,
 } from '@heroicons/react/24/outline'
-import {
-  TagIcon,
-} from '@heroicons/react/24/solid'
+import { TagIcon } from '@heroicons/react/24/solid'
 import { ServiceType, EnhancedPricingData } from '@/types'
 import { calculateEnhancedPricing } from '@/lib/pricing/engine'
+import { generateLiveActivityItems, NotificationItem } from '@/lib/live-activity/generator'
 
 // ==================== TYPES ====================
 type StepKey = 'service' | 'contact' | 'assignment' | 'details'
@@ -197,123 +192,358 @@ function PromisesCard() {
 }
 
 function StatsCard() {
-  const [studentCount, setStudentCount] = useState(0)
-
-  useEffect(() => {
-    let start = 0
-    const end = 2847
-    const duration = 1200 // ms
-    const stepTime = 20 // ms per tick
-    const increment = Math.ceil(end / (duration / stepTime))
-
-    const timer = setInterval(() => {
-      start += increment
-      if (start >= end) {
-        setStudentCount(end)
-        clearInterval(timer)
-      } else {
-        setStudentCount(start)
-      }
-    }, stepTime)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  const pills = [
-    { icon: StarIcon, text: '4.9/5 average' },
-    { icon: ClockIcon, text: '98% on-time' },
-    { icon: ShieldCheckIcon, text: `${studentCount.toLocaleString()} students this month` },
+  const trustSignals = [
+    {
+      icon: '/icons/security-shield.svg',
+      title: 'Secure & Confidential',
+      description: 'Your privacy protected with SSL encryption',
+      highlight: true
+    },
+    {
+      icon: '/icons/success-chart.svg', 
+      title: '98% Success Rate',
+      description: 'Consistently high-quality academic results',
+      highlight: false
+    },
+    {
+      icon: '/icons/expert-support.svg',
+      title: 'Expert Care & Support', 
+      description: 'Dedicated academic professionals at your service',
+      highlight: false
+    },
+    {
+      icon: '/icons/help-support.svg',
+      title: '24/7 Help Available',
+      description: 'Round-the-clock assistance when you need it',
+      highlight: false
+    }
   ]
 
   return (
     <Card className="p-5 rounded-2xl border border-slate-200 shadow-sm">
-      <div className="flex flex-wrap gap-2">
-        {pills.map(({ icon: Icon, text }) => (
-          <span
-            key={text}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700"
+      <div className="space-y-3">
+        {trustSignals.map((signal, index) => (
+          <div 
+            key={index} 
+            className={`relative flex items-start gap-3 p-3 rounded-lg transition-colors ${
+              signal.highlight 
+                ? 'bg-purple-50 border border-purple-100 hover:bg-purple-100' 
+                : 'hover:bg-gray-50'
+            }`}
           >
-            <Icon className="w-4 h-4 text-slate-500" />
-            {text}
-          </span>
+            <div className="flex-shrink-0">
+              <img 
+                src={signal.icon} 
+                alt={signal.title}
+                className="w-8 h-8"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="text-sm font-semibold text-gray-900 leading-tight">
+                {signal.title}
+              </h4>
+              <p className="text-xs text-gray-600 mt-0.5 leading-tight">
+                {signal.description}
+              </p>
+            </div>
+            
+            {signal.highlight && (
+              <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 z-10">
+                <img 
+                  src="/icons/signup-hand.svg" 
+                  alt="Look here"
+                  className="w-6 h-6 animate-pulse"
+                />
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </Card>
   )
 }
 
-function ReviewsCard() {
-  const reviews = [
-    { rating: 5, text: "Great sources and formatting. A+.", source: "Nursing Student" },
-    { rating: 5, text: "Fast turnaround saved my grade.", source: "Business Student" },
-    { rating: 5, text: "Well-cited, polished draft.", source: "English Student" },
-    { rating: 5, text: "Clear, on time, and exactly per rubric.", source: "Psychology Student" },
-  ]
+// ==================== REVIEWS CARD ====================
+import { generateLiveReviews, ReviewItem } from "@/lib/reviews/generator"
 
-  const plugin = useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: false })
-  )
+function ReviewsCard({ reviews }: { reviews: ReviewItem[] }) {
+  // Map rating -> your SVGs
+  const RATING_IMG: Record<4 | 5, string> = {
+    4: "/icons/rating-4-stars.svg",
+    5: "/icons/rating-5-stars.svg",
+  }
 
-  const [api, setApi] = useState<CarouselApi>()
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  // Animation timings
+  const SHOW_MS = 10000  // visible duration
+  const GAP_MS = 2000    // gap between slides
+
+  const [index, setIndex] = useState(0)
+  const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    if (!api) return
+    let t1: ReturnType<typeof setTimeout> | undefined
+    let t2: ReturnType<typeof setTimeout> | undefined
+    let mounted = true
 
-    const updateIndex = () => setSelectedIndex(api.selectedScrollSnap())
-    api.on("select", updateIndex)
-    updateIndex()
-  }, [api])
+    const run = () => {
+      setVisible(true)
+      t1 = setTimeout(() => {
+        setVisible(false)
+        t2 = setTimeout(() => {
+          if (!mounted) return
+          setIndex(i => (i + 1) % reviews.length)
+          run()
+        }, GAP_MS)
+      }, SHOW_MS)
+    }
 
-  const totalSlides = Math.ceil(reviews.length / 2)
+    run()
+    return () => {
+      mounted = false
+      if (t1) clearTimeout(t1)
+      if (t2) clearTimeout(t2)
+    }
+  }, [reviews.length])
+
+  const r = reviews[index]
+  if (!r) return null
+
+  // Simple slide-in/out animation
+  const slideVariants: Variants = {
+    initial: { x: 24, opacity: 0 },
+    animate: { x: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
+    exit: { x: -24, opacity: 0, transition: { duration: 0.6, ease: "easeIn" } },
+  }
 
   return (
-    <Card className="p-5 rounded-2xl border border-slate-200 shadow-sm">
-      <h5 className="text-sm font-medium text-slate-900 mb-3">Recent reviews</h5>
+    <Card className="p-6 rounded-2xl border border-slate-200">
+      <div className="flex items-center gap-2 mb-2">
+  <img
+    src="/icons/reviews.svg"
+    alt="Reviews"
+    className="w-8 h-auto"
+    loading="lazy"
+  />
+  <h5 className="text-base font-bold text-slate-900">
+    What students say...
+  </h5>
+</div>
 
-      <Carousel
-        plugins={[plugin.current]}
-        opts={{ align: "start", loop: true }}
-        setApi={setApi}
-      >
-        <CarouselContent>
-          {reviews.map((r, i) => (
-            <CarouselItem key={i} className="md:basis-1/2 lg:basis-1/2">
-              <Card className="p-4 h-full flex flex-col justify-between border border-slate-200 rounded-xl">
-                <div className="flex mb-2">
-                  {Array.from({ length: r.rating }).map((_, idx) => (
-                    <StarIcon key={idx} className="w-4 h-4 text-yellow-500" />
-                  ))}
-                </div>
-                <p className="text-sm text-slate-700 mb-2">"{r.text}"</p>
-                <p className="text-xs text-slate-500">— {r.source}</p>
-              </Card>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-      </Carousel>
 
-      {totalSlides > 1 && (
-        <div className="flex justify-center mt-3 gap-2">
-          {Array.from({ length: totalSlides }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => api?.scrollTo(idx)}
-              className={`h-2 w-2 rounded-full transition-colors ${
-                selectedIndex === idx ? "bg-[#8800e9]" : "bg-slate-300"
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-      )}
+      <div className="relative h-[160px]">
+        <AnimatePresence mode="wait">
+          {visible && (
+            <motion.div
+              key={r.code}
+              className="h-full flex flex-col gap-4"
+              variants={slideVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              {/* Header / Row 1: Type: [Subject]  |  Stars */}
+<div className="flex items-center justify-between mb-1">
+  <div className="flex items-center gap-2">
+    <span className="text-[12px] text-slate-500">Type:</span>
+    <span className="text-purple-800 py-0.5 rounded-full text-[12px] font-medium">
+      {r.subject}
+    </span>
+  </div>
+
+  <img
+    src={RATING_IMG[r.rating]}
+    alt={`${r.rating} star rating`}
+    width={120}
+    height={20}
+    className="h-4 w-auto shrink-0 overflow-visible"
+    loading="lazy"
+  />
+</div>
+
+{/* Row 2: Review text */}
+<p className="text-sm text-slate-700 mb-1">“{r.text}”</p>
+
+{/* Row 3: Date (left)  |  DMH code (right) */}
+<div className="flex items-center justify-between">
+  <div className="flex items-center gap-1 text-xs text-slate-500">
+    <CalendarIcon className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
+    <span>{r.label}</span>
+  </div>
+  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[11px] font-mono">
+    {r.code}
+  </span>
+</div>
+
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </Card>
   )
 }
 
+
+// ==================== LIVE ACTIVITY FEED (flip-board) ====================
+import { AnimatePresence, motion } from "framer-motion";
+
+type LiveActivityFeedProps = {
+  items: NotificationItem[]
+}
+
+function LiveActivityFeed({ items }: LiveActivityFeedProps) {
+  const countryMaps = {
+    usa: '/maps/002-united states of america.svg',
+    uk: '/maps/006-united kingdom.svg',
+    sg: '/maps/014-singapore.svg',
+    kr: '/maps/012-south korea.svg',
+    uae: '/maps/013-united arab emirates.svg',
+    ch: '/maps/051-switzerland.svg',
+  }
+
+  // index of current item and whether it’s visible
+  const [index, setIndex] = useState(0)
+  const [visible, setVisible] = useState(true)
+
+  // 15s visible → 30s hidden → advance → repeat
+  useEffect(() => {
+    let tShow: ReturnType<typeof setTimeout> | undefined
+    let tHide: ReturnType<typeof setTimeout> | undefined
+    let mounted = true
+
+    const cycle = () => {
+      setVisible(true) // show current
+      tShow = setTimeout(() => {
+        setVisible(false) // hide
+        tHide = setTimeout(() => {
+          if (!mounted) return
+          setIndex((i) => (i + 1) % Math.max(items.length, 1))
+          cycle()
+        }, 2000) // hidden for 30s
+      }, 5000) // visible for 15s
+    }
+
+    cycle()
+    return () => {
+      mounted = false
+      if (tShow) clearTimeout(tShow)
+      if (tHide) clearTimeout(tHide)
+    }
+  }, [items.length])
+
+  const n = items[index]
+  if (!n) return null
+
+  // flip-board animation variants
+  const flipVariants: Variants = {
+    initial: { rotateX: 90, opacity: 0 },
+    animate: {
+      rotateX: 0,
+      opacity: 1,
+      transition: { duration: 1.0, ease: [0.25, 0.1, 0.25, 1] },  // slower & smoother
+    },
+    exit: {
+      rotateX: -90,
+      opacity: 0,
+      transition: { duration: 0.9, ease: [0.25, 0.1, 0.25, 1] },
+    },
+  };
+  
+
+  return (
+    <div
+      className="max-w-sm mx-auto"
+      style={{ perspective: 900 }} // needed for 3D flip
+    >
+      <AnimatePresence mode="wait">
+        {visible && (
+          <motion.div
+          key={n.id}
+          className="bg-white rounded-full border border-gray-200 py-2 px-2"
+          variants={flipVariants}
+          initial="initial"
+          animate="animate"  // <-- was "enter"
+          exit="exit"
+          style={{ transformOrigin: "top center" }}
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+        >
+        
+            <div className="flex items-center gap-3">
+              {/* Left: icon / map */}
+              <div className="flex-shrink-0">
+                {n.type === 'order' ? (
+                  <div className="w-12 h-12 overflow-hidden">
+                    <img
+                      src={countryMaps[n.country]}
+                      alt={`${'cityLabel' in n ? n.cityLabel : 'Location'} map`}
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      className="w-12 h-12 object-contain"
+                    />
+                  </div>
+                ) : (
+                  // mailed icon for completions
+                  <div className="w-12 h-12 flex items-center justify-center">
+                    <img
+                      src="/icons/mailed.svg"
+                      alt="Completed order"
+                      width={48}
+                      height={48}
+                      loading="lazy"
+                      className="w-12 h-12 object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                {n.type === 'order' ? (
+                  <>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      A customer from {n.cityLabel}
+                    </div>
+                    <div className="text-gray-600 text-xs mt-0.5">
+                      {n.label === 'Today'
+                        ? `just ordered help with ${n.subject}`
+                        : `ordered help with ${n.subject}`}
+                    </div>
+                    {/* timestamp row (single source of truth for time) */}
+                    <div className="flex items-center gap-1 mt-1">
+                      <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-xs text-gray-500">{n.label}</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-semibold text-gray-900 text-sm">
+                      <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-mono">
+                        {n.orderID}
+                      </span>{' '}
+                      {n.subject /* subject now included in completion items */}
+                    </div>
+                    <div className="text-gray-600 text-xs mt-0.5">
+                      completed and delivered {n.label}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+
 // ==================== PRICING DISPLAY ====================
 function PricingSidebarBody({ formData }: { formData: any }) {
-  const readyForPrice = !!formData.serviceType && !!formData.deadline && (formData.pages || 0) > 0;
+  const readyForPrice = !!formData.serviceType && !!formData.deadline && (formData.pages || 0) > 0
 
   const pricing: EnhancedPricingData | null = readyForPrice
     ? calculateEnhancedPricing({
@@ -322,12 +552,11 @@ function PricingSidebarBody({ formData }: { formData: any }) {
         deadline: formData.deadline,
         documentType: formData.documentType,
       })
-    : null;
+    : null
     
-  const MARKET_UPLIFT = 0.12; // 12%
-  const unit = formData.serviceType === 'presentation' ? 'slide' : 'page';
+  const MARKET_UPLIFT = 0.12
+  const unit = formData.serviceType === 'presentation' ? 'slide' : 'page'
 
-  // Skeleton Loader State
   if (!pricing) {
     return (
       <div className="space-y-4">
@@ -343,16 +572,11 @@ function PricingSidebarBody({ formData }: { formData: any }) {
           </div>
         </Card>
       </div>
-    );
+    )
   }
-
-  // Main Pricing Display
-  const competitorTotal = pricing.totalPrice * (1 + MARKET_UPLIFT);
-  const saveVsMarket = Math.max(0, competitorTotal - pricing.totalPrice);
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Price Card */}
       <Card className="p-6 rounded-xl border-gray-200 shadow-sm">
         <CardHeader className="p-0 mb-4">
           <CardTitle className="text-base font-semibold text-gray-900">YOUR PRICE</CardTitle>
@@ -373,7 +597,6 @@ function PricingSidebarBody({ formData }: { formData: any }) {
           <Separator className="my-4" />
           <div className="space-y-2 text-sm mb-6">
             <BreakdownRow label="Base Price" value={formatCurrency(pricing.basePrice)} />
-            
             {pricing.savings > 0 && (
               <BreakdownRow 
                 label={`${pricing.discountTier} Discount`} 
@@ -381,7 +604,6 @@ function PricingSidebarBody({ formData }: { formData: any }) {
                 color="green" 
               />
             )}
-            
             {pricing.rushFee > 0 && (
               <BreakdownRow 
                 label={`Rush Charges (+${pricing.rushFeePercentage}%)`} 
@@ -390,16 +612,12 @@ function PricingSidebarBody({ formData }: { formData: any }) {
               />
             )}
           </div>
-          
-          {/* Checkout Button Inside Card */}
           <button className="w-full h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 font-medium">
             <ShoppingCartIcon className="w-5 h-5" />
             Continue to Checkout
           </button>
         </CardContent>
       </Card>
-  
-      {/* Value Proposition Card - Only show if there's content */}
       {pricing.savings > 0 && (
         <Card className="p-5 rounded-xl border border-gray-200 bg-white shadow-sm">
           <div className="space-y-3">
@@ -410,17 +628,33 @@ function PricingSidebarBody({ formData }: { formData: any }) {
           </div>
         </Card>
       )}
-  
-      {/* Trust Badges */}
       <div className="flex justify-center items-center gap-6 pt-2">
         <TrustBadge icon={ShieldCheckIcon} text="SSL Secure Checkout" />
         <TrustBadge icon={CheckCircleIcon} text="Money-Back Guarantee" />
       </div>
     </div>
-  );} 
+  )
+}
 
 // ==================== MAIN COMPONENT ====================
 export default function PricingSidebar({ formData, currentStep }: PricingSidebarProps) {
+  // Memoize expensive generators
+  const notifications = useMemo(() => 
+    generateLiveActivityItems({
+      days: 7,
+      minTotal: 12,
+      maxTotal: 18,
+      completionRatio: 0.25,
+      timezone: 'Asia/Kolkata',
+    }), 
+    [] // Empty deps = compute once per component mount
+  );
+
+  const reviews = useMemo(() => 
+    generateLiveReviews({ count: 20 }), 
+    [] // Empty deps = compute once per component mount
+  );
+
   let firstCard: React.ReactElement | null = null
 
   if (currentStep === 'service') {
@@ -428,31 +662,33 @@ export default function PricingSidebar({ formData, currentStep }: PricingSidebar
   } else if (currentStep === 'contact') {
     firstCard = <StatsCard />
   } else if (currentStep === 'assignment') {
-    firstCard = <ReviewsCard />
+    firstCard = (
+      <div className="space-y-4">
+        <ReviewsCard reviews={reviews} />
+        <LiveActivityFeed items={notifications} />
+      </div>
+    )
   }
 
-  const content = currentStep === 'details' ? (
-    <PricingSidebarBody formData={formData} />
-  ) : (
-    <div className="space-y-6">{firstCard}</div>
-  )
+  const content = currentStep === 'details'
+    ? <PricingSidebarBody formData={formData} />
+    : <div className="space-y-6">{firstCard}</div>
 
-  // Check if we should show pricing
-const readyForPrice = !!formData.serviceType && !!formData.deadline && (formData.pages || 0) > 0;
-const showPricing = currentStep === 'details' && readyForPrice;
+  const readyForPrice = !!formData.serviceType && !!formData.deadline && (formData.pages || 0) > 0
+  const showPricing = currentStep === 'details' && readyForPrice
 
-return (
-  <div className="space-y-4">
-    {!showPricing && (
-      <TopMotivationBar
-        step={currentStep}
-        name={formData.fullName}
-        email={formData.email}
-      />
-    )}
-    <div className={showPricing ? "animate-slideUp" : ""}>
-      {content}
+  return (
+    <div className="space-y-4">
+      {!showPricing && (
+        <TopMotivationBar
+          step={currentStep}
+          name={formData.fullName}
+          email={formData.email}
+        />
+      )}
+      <div className={showPricing ? "animate-slideUp" : ""}>
+        {content}
+      </div>
     </div>
-  </div>
-)
+  )
 }
