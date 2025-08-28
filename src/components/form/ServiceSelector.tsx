@@ -185,7 +185,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
       </RadioGroup>
 
       {/* Sticky Next button for mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:static lg:p-0 lg:border-t-0">
+      <div className="fixed bottom-5 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:static lg:p-0 lg:border-t-0 z-50 shadow-lg">
         <Button 
           onClick={handleNext}
           disabled={!selectedValue}
