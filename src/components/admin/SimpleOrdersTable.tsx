@@ -38,12 +38,33 @@ interface FileAttachment {
 export default function SimpleOrdersTable() {
   const [orders, setOrders] = useState<Order[]>([])
   const [files, setFiles] = useState<Record<string, FileAttachment[]>>({})
+  const [abandonments, setAbandonments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     fetchOrders()
   }, [])
+
+  // Fetch recent abandonments
+useEffect(() => {
+  const fetchAbandonments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('form_abandonment')
+        .select('*')
+        .order('last_activity', { ascending: false })
+        .limit(10)
+      
+      if (error) throw error
+      setAbandonments(data || [])
+    } catch (error) {
+      console.error('Error fetching abandonments:', error)
+    }
+  }
+  
+  fetchAbandonments()
+}, [])
 
   const fetchOrders = async () => {
     try {
@@ -307,93 +328,125 @@ export default function SimpleOrdersTable() {
   }
 
   return (
-    <Card>
-      <CardContent className="p-6">
-        {/* Search */}
-        <div className="mb-6">
-          <Input
-            placeholder="Search by name, email, or order ID..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-md"
-          />
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-2">Order ID</th>
-                <th className="text-left py-3 px-2">Customer</th>
-                <th className="text-left py-3 px-2">Service</th>
-                <th className="text-left py-3 px-2">Amount</th>
-                <th className="text-left py-3 px-2">Date</th>
-                <th className="text-left py-3 px-2">Country</th>
-                <th className="text-left py-3 px-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-2">
-                    <span className="font-mono text-sm">
-                      #{order.id.slice(0, 8).toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <div>
-                      <p className="font-medium">{order.full_name}</p>
-                      <p className="text-sm text-gray-500">{order.email}</p>
+    <>
+      {/* Abandonment Summary Card */}
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <h3 className="font-semibold text-gray-900 mb-3">📉 Recent Form Abandonments</h3>
+          {abandonments.length === 0 ? (
+            <p className="text-gray-500 text-sm">No recent abandonments</p>
+          ) : (
+            <div className="space-y-2">
+              {abandonments.slice(0, 5).map((abandon) => (
+                <div key={abandon.id} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                  <div>
+                    <span className="font-medium">{abandon.full_name || 'Unknown'} ({abandon.email})</span>
+                    {abandon.service_type && (
+                      <span className="ml-2 text-gray-500">• {abandon.service_type}</span>
+                    )}
+                  </div>
+                  <div className="text-right text-gray-500">
+                    <div>Step: {abandon.current_step}</div>
+                    <div className="text-xs">
+                      {formatVerboseDate(abandon.last_activity)}
+                      {abandon.admin_notified && <span className="ml-2 text-green-600">✓ Alerted</span>}
                     </div>
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className="capitalize">{order.service_type}</span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className="font-semibold text-green-600">
-                      ${order.total_price?.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className="text-sm">{formatVerboseDate(order.created_at)}</span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{getCountryFlag(order.country)}</span>
-                      <span className="text-sm">{order.country}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          Details
-                        </Button>
-                      </DialogTrigger>
-                      <OrderDetailsModal order={order} />
-                    </Dialog>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-          
-          {filteredOrders.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {search ? 'No orders found matching your search.' : 'No orders yet.'}
             </div>
           )}
-        </div>
-
-        {/* Summary */}
-        {filteredOrders.length > 0 && (
-          <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded">
-            Showing {filteredOrders.length} of {orders.length} orders • 
-            Total value: ${filteredOrders.reduce((sum, order) => sum + (order.total_price || 0), 0).toFixed(2)}
+        </CardContent>
+      </Card>
+      
+      {/* Original Orders Card */}
+      <Card>
+        <CardContent className="p-6">
+          {/* Search */}
+          <div className="mb-6">
+            <Input
+              placeholder="Search by name, email, or order ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-md"
+            />
           </div>
-        )}
-      </CardContent>
-    </Card>
-  )
+  
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-2">Order ID</th>
+                  <th className="text-left py-3 px-2">Customer</th>
+                  <th className="text-left py-3 px-2">Service</th>
+                  <th className="text-left py-3 px-2">Amount</th>
+                  <th className="text-left py-3 px-2">Date</th>
+                  <th className="text-left py-3 px-2">Country</th>
+                  <th className="text-left py-3 px-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-2">
+                      <span className="font-mono text-sm">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2">
+                      <div>
+                        <p className="font-medium">{order.full_name}</p>
+                        <p className="text-sm text-gray-500">{order.email}</p>
+                      </div>
+                    </td>
+                    <td className="py-3 px-2">
+                      <span className="capitalize">{order.service_type}</span>
+                    </td>
+                    <td className="py-3 px-2">
+                      <span className="font-semibold text-green-600">
+                        ${order.total_price?.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2">
+                      <span className="text-sm">{formatVerboseDate(order.created_at)}</span>
+                    </td>
+                    <td className="py-3 px-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getCountryFlag(order.country)}</span>
+                        <span className="text-sm">{order.country}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Details
+                          </Button>
+                        </DialogTrigger>
+                        <OrderDetailsModal order={order} />
+                      </Dialog>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            {filteredOrders.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                {search ? 'No orders found matching your search.' : 'No orders yet.'}
+              </div>
+            )}
+          </div>
+  
+          {/* Summary */}
+          {filteredOrders.length > 0 && (
+            <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded">
+              Showing {filteredOrders.length} of {orders.length} orders • 
+              Total value: ${filteredOrders.reduce((sum, order) => sum + (order.total_price || 0), 0).toFixed(2)}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>)
 }

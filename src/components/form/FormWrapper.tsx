@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import ServiceSelector from './ServiceSelector'
 import EmailCapture from './EmailCapture'
 import AssignmentDetails from './AssignmentDetails'
@@ -16,6 +16,7 @@ export default function FormWrapper() {
   const [currentStep, setCurrentStep] = useState<FormStep>('service')
   const [completedSteps, setCompletedSteps] = useState<FormStep[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const [showExitIntent, setShowExitIntent] = useState(false)
   
   const [formData, setFormData] = useState<Partial<OrderFormData>>({
@@ -52,6 +53,39 @@ export default function FormWrapper() {
       saveFormData(formData, currentStep, completedSteps)
     }
   }, [formData, currentStep, completedSteps, saveFormData])
+
+  // Track form progress for abandonment detection
+const trackProgress = useCallback(async (step: string) => {
+  if (!formData.email) return // Only track after email capture
+  
+  try {
+    await fetch('/api/track-progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        fullName: formData.fullName,
+        step,
+        formData: {
+          serviceType: formData.serviceType,
+          subject: formData.subject,
+          pages: formData.pages,
+          deadline: formData.deadline,
+        },
+        sessionId: sessionId
+      })
+    })
+  } catch (error) {
+    console.error('Failed to track progress:', error)
+  }
+}, [formData, sessionId])
+
+// Track whenever step changes (after email capture)
+useEffect(() => {
+  if (formData.email) {
+    trackProgress(currentStep)
+  }
+}, [currentStep, formData.email, trackProgress])
 
   // Load saved data on mount
   useEffect(() => {
@@ -226,7 +260,8 @@ export default function FormWrapper() {
         
         const result = await response.json()
         console.log('📦 Response:', result)
-        
+        // Track successful form submission
+        await trackProgress('submitted')
         if (result.success) {
           clearStoredData()
           
