@@ -6,7 +6,7 @@ export async function getCountryFromIP(ip: string): Promise<string> {
     // Handle localhost/development
     if (ip === '127.0.0.1' || ip === '::1' || ip.includes('localhost')) {
       console.log('🌍 [GEO] Localhost detected, returning India')
-      return 'India' // Changed from US to India since you're testing
+      return 'India'
     }
 
     const url = `https://ipapi.co/${ip}/country_name/`
@@ -44,4 +44,20 @@ export async function getCountryFromIP(ip: string): Promise<string> {
     console.error('❌ [GEO] Exception:', error)
     return 'Unknown'
   }
+}
+
+// Extract real IP from request headers
+export function getClientIP(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIP = request.headers.get('x-real-ip')
+  
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
+  
+  if (realIP) {
+    return realIP
+  }
+  
+  return '127.0.0.1' // Fallback for development
 }
