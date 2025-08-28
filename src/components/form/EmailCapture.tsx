@@ -178,37 +178,43 @@ export default function EmailCapture({
   }, [])
 
   // Auto-scroll effect
-  useEffect(() => {
-    if (mainFormRef.current) {
-      setTimeout(() => {
-        const element = mainFormRef.current
-        if (!element) return
-        
-        const elementPosition = element.offsetTop - 20
-        const startPosition = window.pageYOffset
-        const distance = elementPosition - startPosition
-        const duration = 800
-        let start: number | null = null
+  // Auto-scroll effect (respect reduced motion)
+useEffect(() => {
+  if (!mainFormRef.current) return
 
-        function animation(currentTime: number): void {
-          if (start === null) start = currentTime
-          const timeElapsed = currentTime - start
-          const run = easeInOutCubic(timeElapsed, startPosition, distance, duration)
-          window.scrollTo(0, run)
-          if (timeElapsed < duration) requestAnimationFrame(animation)
-        }
+  const element = mainFormRef.current
+  const targetTop = element.offsetTop - 20
 
-        function easeInOutCubic(t: number, b: number, c: number, d: number): number {
-          t /= d / 2
-          if (t < 1) return c / 2 * t * t * t + b
-          t -= 2
-          return c / 2 * (t * t * t + 2) + b
-        }
+  const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-        requestAnimationFrame(animation)
-      }, 600)
+  if (prefersReduced) {
+    // Jump immediately, no animation
+    window.scrollTo(0, targetTop)
+    return
+  }
+
+  // Keep the existing animated scroll for users who allow motion
+  setTimeout(() => {
+    const startPosition = window.pageYOffset
+    const distance = targetTop - startPosition
+    const duration = 800
+    let start: number | null = null
+
+    function animation(currentTime: number): void {
+      if (start === null) start = currentTime
+      const timeElapsed = currentTime - start
+      const t = timeElapsed / (duration / 2)
+      const eased = t < 1
+        ? (distance / 2) * t * t * t + startPosition
+        : (distance / 2) * ((t - 2) * (t - 2) * (t - 2) + 2) + startPosition
+      window.scrollTo(0, eased)
+      if (timeElapsed < duration) requestAnimationFrame(animation)
     }
-  }, [])
+
+    requestAnimationFrame(animation)
+  }, 600)
+}, [])
+
 
   // 🎯 BETTER INPUT STYLING with proper icon spacing
   const getInputStyling = (field: 'fullName' | 'email') => {

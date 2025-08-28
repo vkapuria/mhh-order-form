@@ -1,20 +1,27 @@
 'use client'
 
-import { useMemo, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue,
-  SelectGroup,
-  SelectLabel 
-} from '@/components/ui/select'
+
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command"
+
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover"
+
 import {
   DocumentTextIcon,
   AcademicCapIcon,
@@ -24,6 +31,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import { ChevronsUpDown } from 'lucide-react'
 import type { ServiceType } from '@/types'
 
 interface AssignmentDetailsProps {
@@ -55,7 +63,7 @@ interface ValidationState {
   instructions: 'idle' | 'valid' | 'invalid'
 }
 
-// 🎓 COMPREHENSIVE SUBJECT LIST WITH OPTGROUPS
+/** 🎓 SUBJECT LIST (grouped) */
 const allSubjects = [
   {
     group: 'Business',
@@ -119,7 +127,7 @@ const allSubjects = [
   }
 ]
 
-// 📝 COMPREHENSIVE DOCUMENT TYPE LIST WITH OPTGROUPS
+/** 📝 DOCUMENT TYPE LIST (grouped) */
 const allDocumentTypes = [
   {
     group: 'Popular Choices',
@@ -211,20 +219,19 @@ export default function AssignmentDetails({
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [touched, setTouched] = useState({ subject: false, documentType: false, instructions: false })
-  
+  const [subjectOpen, setSubjectOpen] = useState(false)
+  const [documentTypeOpen, setDocumentTypeOpen] = useState(false)
   const mainFormRef = useRef<HTMLDivElement>(null)
 
-  // Validation functions
+  // Validation
   const validateSubject = (subject: string): string | null => {
     if (!subject || subject.trim() === '') return 'Please select a subject'
     return null
   }
-
   const validateDocumentType = (docType: string): string | null => {
     if (!docType || docType.trim() === '') return 'Please select a document type'
     return null
   }
-
   const validateInstructions = (instructions: string): string | null => {
     const trimmed = instructions.trim()
     if (!trimmed) return 'Assignment instructions are required'
@@ -232,74 +239,56 @@ export default function AssignmentDetails({
     return null
   }
 
-  // Handle field changes with validation clearing
+  // Handlers
   const handleSubjectChange = (value: string) => {
     onChange('subject', value)
-    // Clear error when user selects something
     if (errors.subject && value) {
       setErrors(prev => ({ ...prev, subject: undefined }))
       setValidationState(prev => ({ ...prev, subject: 'valid' }))
     }
   }
-
   const handleDocumentTypeChange = (value: string) => {
     onChange('documentType', value)
-    // Clear error when user selects something
     if (errors.documentType && value) {
       setErrors(prev => ({ ...prev, documentType: undefined }))
       setValidationState(prev => ({ ...prev, documentType: 'valid' }))
     }
   }
-
   const handleInstructionsChange = (value: string) => {
     onChange('instructions', value)
-    // Clear error when user types enough
     if (errors.instructions && value.trim().length >= 20) {
       setErrors(prev => ({ ...prev, instructions: undefined }))
       setValidationState(prev => ({ ...prev, instructions: 'valid' }))
     }
   }
 
-  // Blur validation handlers
+  // Blur
   const handleSubjectBlur = () => {
     setTouched(prev => ({ ...prev, subject: true }))
     const error = validateSubject(data.subject)
     setErrors(prev => ({ ...prev, subject: error || undefined }))
-    setValidationState(prev => ({ 
-      ...prev, 
-      subject: error ? 'invalid' : 'valid' 
-    }))
+    setValidationState(prev => ({ ...prev, subject: error ? 'invalid' : 'valid' }))
   }
-
   const handleDocumentTypeBlur = () => {
     setTouched(prev => ({ ...prev, documentType: true }))
     const error = validateDocumentType(data.documentType)
     setErrors(prev => ({ ...prev, documentType: error || undefined }))
-    setValidationState(prev => ({ 
-      ...prev, 
-      documentType: error ? 'invalid' : 'valid' 
-    }))
+    setValidationState(prev => ({ ...prev, documentType: error ? 'invalid' : 'valid' }))
   }
-
   const handleInstructionsBlur = () => {
     setTouched(prev => ({ ...prev, instructions: true }))
     const error = validateInstructions(data.instructions)
     setErrors(prev => ({ ...prev, instructions: error || undefined }))
-    setValidationState(prev => ({ 
-      ...prev, 
-      instructions: error ? 'invalid' : 'valid' 
-    }))
+    setValidationState(prev => ({ ...prev, instructions: error ? 'invalid' : 'valid' }))
   }
 
-  // Form submission
+  // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Mark all required fields as touched
     setTouched({ subject: true, documentType: true, instructions: true })
 
-    // Validate all required fields
     const subjectError = validateSubject(data.subject)
     const documentTypeError = validateDocumentType(data.documentType)
     const instructionsError = validateInstructions(data.instructions)
@@ -309,14 +298,12 @@ export default function AssignmentDetails({
       documentType: documentTypeError || undefined,
       instructions: instructionsError || undefined
     })
-
     setValidationState({
       subject: subjectError ? 'invalid' : 'valid',
       documentType: documentTypeError ? 'invalid' : 'valid',
       instructions: instructionsError ? 'invalid' : 'valid'
     })
 
-    // Proceed if no errors
     if (!subjectError && !documentTypeError && !instructionsError) {
       try {
         await new Promise(resolve => setTimeout(resolve, 200))
@@ -329,44 +316,58 @@ export default function AssignmentDetails({
     setIsSubmitting(false)
   }
 
-  // Auto-scroll effect
+  // Auto-scroll (respect reduced motion)
   useEffect(() => {
-    if (mainFormRef.current) {
-      setTimeout(() => {
-        const element = mainFormRef.current
-        if (!element) return
-        
-        const elementPosition = element.offsetTop - 20
-        const startPosition = window.pageYOffset
-        const distance = elementPosition - startPosition
-        const duration = 800
-        let start: number | null = null
+    if (!mainFormRef.current) return
 
-        function animation(currentTime: number): void {
-          if (start === null) start = currentTime
-          const timeElapsed = currentTime - start
-          const run = easeInOutCubic(timeElapsed, startPosition, distance, duration)
-          window.scrollTo(0, run)
-          if (timeElapsed < duration) requestAnimationFrame(animation)
-        }
+    const targetTop = mainFormRef.current.offsetTop - 20
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-        function easeInOutCubic(t: number, b: number, c: number, d: number): number {
-          t /= d / 2
-          if (t < 1) return c / 2 * t * t * t + b
-          t -= 2
-          return c / 2 * (t * t * t + 2) + b
-        }
-
-        requestAnimationFrame(animation)
-      }, 800)
+    if (prefersReduced) {
+      window.scrollTo(0, targetTop)
+      return
     }
+
+    setTimeout(() => {
+      const startPosition = window.pageYOffset
+      const distance = targetTop - startPosition
+      const duration = 800
+      let start: number | null = null
+
+      function animation(currentTime: number): void {
+        if (start === null) start = currentTime
+        const timeElapsed = currentTime - start
+        const t = timeElapsed / (duration / 2)
+        const eased =
+          t < 1
+            ? (distance / 2) * t * t * t + startPosition
+            : (distance / 2) * ((t - 2) * (t - 2) * (t - 2) + 2) + startPosition
+        window.scrollTo(0, eased)
+        if (timeElapsed < duration) requestAnimationFrame(animation)
+      }
+
+      requestAnimationFrame(animation)
+    }, 800)
   }, [])
 
-  const isValid = data.subject.trim().length > 0 && data.documentType.trim().length > 0 && data.instructions.trim().length >= 20
+  const isValid =
+    data.subject.trim().length > 0 &&
+    data.documentType.trim().length > 0 &&
+    data.instructions.trim().length >= 20
+
+  const selectedSubjectLabel =
+    data.subject
+      ? allSubjects.flatMap(g => g.options).find(s => s.value === data.subject)?.label
+      : ''
+
+  const selectedDocTypeLabel =
+    data.documentType
+      ? allDocumentTypes.flatMap(g => g.options).find(d => d.value === data.documentType)?.label
+      : ''
 
   return (
     <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
-      {/* Accordion Summaries */}
+      {/* Summaries */}
       {previousData && (
         <>
           <StepSummary
@@ -387,13 +388,14 @@ export default function AssignmentDetails({
         </>
       )}
 
-      {/* Main Form Card */}
+      {/* Main Card */}
       <Card ref={mainFormRef} className="px-0 py-8 border-0 shadow-none lg:p-8 lg:shadow-sm lg:border lg:border-gray-200">
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Provide Assignment Details</h2>
           <p className="text-gray-600 text-base">
-            Help us understand what you need so we can deliver<span 
+            Help us understand what you need so we can deliver
+            <span
               className="relative inline-block font-medium text-gray-800"
               style={{
                 backgroundImage: 'url(/icons/marker.svg)',
@@ -403,189 +405,231 @@ export default function AssignmentDetails({
                 padding: '2px 4px 8px 4px',
                 transform: 'rotate(-1deg)',
               }}
-            >quality work</span>
+            >
+              quality work
+            </span>
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
-          
+
           {/* Row 1: Subject + Document Type */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-            
-            {/* Subject Field with Optgroups */}
+
+            {/* Subject */}
             <div className="space-y-2 lg:space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <AcademicCapIcon className="w-5 h-5" />
                 Select Subject<span className="text-red-500">*</span>
               </Label>
-              
-              <div className="relative">
-                <Select 
-                  value={data.subject} 
-                  onValueChange={handleSubjectChange}
-                  onOpenChange={(isOpen) => {
-                    if (!isOpen) handleSubjectBlur()
+
+              <Popover open={subjectOpen} onOpenChange={setSubjectOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={subjectOpen}
+                    className="w-full justify-between text-base rounded-lg"
+                    style={{ 
+                      height: '54px', 
+                      border: '1px solid #0f0f10'
+                    }}
+                    onBlur={handleSubjectBlur}
+                  >
+                    {selectedSubjectLabel || 'Select subject...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="p-0" 
+                  style={{ 
+                    minWidth: 'var(--radix-popover-trigger-width)',
+                    width: 'max-content',
+                    maxWidth: '400px'
                   }}
                 >
-                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
-                    <SelectValue placeholder="Select a subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allSubjects.map((group) => (
-                      <SelectGroup key={group.group}>
-                        <SelectLabel className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                          {group.group}
-                        </SelectLabel>
-                        {group.options.map((subject) => (
-                          <SelectItem key={subject.value} value={subject.value}>
-                            {subject.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* Error Message */}
+                  <Command>
+                    <CommandInput placeholder="Search subject..." />
+                    <CommandList>
+                      <CommandEmpty>No subject found.</CommandEmpty>
+                      {allSubjects.map((group) => (
+                        <CommandGroup key={group.group} heading={group.group}>
+                          {group.options.map((subject) => (
+                            <CommandItem
+                              key={subject.value}
+                              value={subject.value}
+                              onSelect={() => {
+                                handleSubjectChange(subject.value)
+                                setSubjectOpen(false) // Close after selection
+                              }}
+                            >
+                              {subject.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ))}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
               {errors.subject && touched.subject && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   {errors.subject}
                 </p>
               )}
-              
-              {/* Help Text */}
               {!errors.subject && (
-                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-4px' }}>We'll match you with a subject expert.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-4px' }}>
+                  We'll match you with a subject expert.
+                </p>
               )}
             </div>
 
-            {/* Document Type Field with Optgroups */}
+            {/* Document Type */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <DocumentTextIcon className="w-5 h-5" />
                 {serviceType === 'presentation' ? 'Assignment Type' : 'Type of paper'}<span className="text-red-500">*</span>
               </Label>
-              
-              <div className="relative">
-                <Select 
-                  value={data.documentType} 
-                  onValueChange={handleDocumentTypeChange}
-                  onOpenChange={(isOpen) => {
-                    if (!isOpen) handleDocumentTypeBlur()
+
+              <Popover open={documentTypeOpen} onOpenChange={setDocumentTypeOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={documentTypeOpen}
+                    className="w-full justify-between text-base rounded-lg"
+                    style={{ 
+                      height: '54px', 
+                      border: '1px solid #0f0f10'
+                    }}
+                    onBlur={handleDocumentTypeBlur}
+                  >
+                    {selectedDocTypeLabel || 'Select document type...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="p-0" 
+                  style={{ 
+                    minWidth: 'var(--radix-popover-trigger-width)',
+                    width: 'max-content',
+                    maxWidth: '400px'
                   }}
                 >
-                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allDocumentTypes.map((group) => (
-                      <SelectGroup key={group.group}>
-                        <SelectLabel className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                          {group.group}
-                        </SelectLabel>
-                        {group.options.map((doc) => (
-                          <SelectItem key={doc.value} value={doc.value}>
-                            {doc.label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* Error Message */}
+                  <Command>
+                    <CommandInput placeholder="Search document type..." />
+                    <CommandList>
+                      <CommandEmpty>No type found.</CommandEmpty>
+                      {allDocumentTypes.map((group) => (
+                        <CommandGroup key={group.group} heading={group.group}>
+                          {group.options.map((type) => (
+                            <CommandItem
+                              key={type.value}
+                              value={type.value}
+                              onSelect={() => {
+                                handleDocumentTypeChange(type.value)
+                                setDocumentTypeOpen(false)
+                              }}
+                            >
+                              {type.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ))}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
               {errors.documentType && touched.documentType && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   {errors.documentType}
                 </p>
               )}
-              
-              {/* Help Text */}
               {!errors.documentType && (
-                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>Essay, report, presentation, and more.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>
+                  Essay, report, presentation, and more.
+                </p>
               )}
             </div>
           </div>
 
-          {/* Row 2: Instructions (Required) */}
+          {/* Row 2: Instructions */}
           <div className="space-y-3">
             <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
               <PencilSquareIcon className="w-5 h-5" />
               Assignment Instructions<span className="text-red-500">*</span>
             </Label>
-            
+
             <div className="relative">
               <Textarea
                 value={data.instructions}
                 onChange={(e) => handleInstructionsChange(e.target.value)}
                 onBlur={handleInstructionsBlur}
                 placeholder="Paste your prompt, key points, or professor's rubric here…"
-                className="min-h-[140px] text-base resize-none rounded-lg" style={{ border: '1px solid #0f0f10' }}
+                className="min-h-[140px] text-base resize-none rounded-lg"
+                style={{ border: '1px solid #0f0f10' }}
                 rows={5}
               />
             </div>
 
-            {/* Error Message */}
             {errors.instructions && touched.instructions && (
               <p className="text-sm text-red-600 flex items-center gap-1">
                 <ExclamationTriangleIcon className="h-4 w-4" />
                 {errors.instructions}
               </p>
             )}
-            
-            {/* Help Text */}
             {!errors.instructions && (
               <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-4px' }}>
-              Helpful: formatting, sources, or any must-follow guidance. (Minimum 20 characters)
-            </p>
+                Helpful: formatting, sources, or any must-follow guidance. (Minimum 20 characters)
+              </p>
             )}
           </div>
 
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
-          <Button
-            type="button"
-            onClick={onBack}
-            disabled={isSubmitting}
-            className="px-6 h-12 font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:opacity-50 transition-colors cursor-pointer"
-            style={{ 
-              backgroundColor: '#e6e6e6', 
-              color: '#1b1b20',
-              borderRadius: '6px'
-            }}
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Back
-          </Button>
+            <Button
+              type="button"
+              onClick={onBack}
+              disabled={isSubmitting}
+              className="px-6 h-12 font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:opacity-50 transition-colors cursor-pointer"
+              style={{
+                backgroundColor: '#e6e6e6',
+                color: '#1b1b20',
+                borderRadius: '6px'
+              }}
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
+            </Button>
 
-          <Button 
-            type="submit" 
-            disabled={!isValid || isSubmitting}
-            className="px-6 h-12 text-white font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:bg-gray-300 disabled:text-gray-500 transition-colors cursor-pointer"
-            style={{ 
-              backgroundColor: '#1b1b20',
-              borderRadius: '6px'
-            }}
-            onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#0f0f14')}
-            onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#1b1b20')}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Processing...
-              </>
-            ) : (
-              <>
-                Continue to Final Details
-                <ArrowRightIcon className="w-4 h-4" />
-              </>
-            )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={!isValid || isSubmitting}
+              className="px-6 h-12 text-white font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:bg-gray-300 disabled:text-gray-500 transition-colors cursor-pointer"
+              style={{
+                backgroundColor: '#1b1b20',
+                borderRadius: '6px'
+              }}
+              onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#0f0f14')}
+              onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#1b1b20')}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Continue to Final Details
+                  <ArrowRightIcon className="w-4 h-4" />
+                </>
+              )}
+            </Button>
           </div>
 
           <p className="text-xs text-gray-800 text-center">

@@ -87,7 +87,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 pb-24 lg:pb-8">
+    <div className="mx-auto max-w-xl space-y-6 pb-4 lg:pb-8">
       {/* Header with micro-trust */}
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -185,7 +185,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
       </RadioGroup>
 
       {/* Sticky Next button for mobile */}
-      <div className="fixed bottom-5 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:static lg:p-0 lg:border-t-0 z-50 shadow-lg">
+      <div className="lg:static lg:p-0 lg:border-t-0 z-50 pt-4">
         <Button 
           onClick={handleNext}
           disabled={!selectedValue}
