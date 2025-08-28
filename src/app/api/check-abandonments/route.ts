@@ -5,68 +5,72 @@ import { Resend } from 'resend'
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST() {
-  try {
-    const now = new Date()
-    
-    // Different time thresholds based on step
-    const abandonmentThresholds = {
+    return await checkAbandonments()
+  }
+  
+  export async function GET() {
+    return await checkAbandonments()
+  }
+  
+  async function checkAbandonments() {
+    try {
+      const now = new Date()
+      
+      const abandonmentThresholds = {
         contact: 30 * 60 * 1000,      // 30 minutes
         assignment: 20 * 60 * 1000,   // 20 minutes  
         details: 10 * 60 * 1000       // 10 minutes
       }
-
-    console.log('🔍 Checking for abandonments at:', now.toISOString())
-
-    // Find abandoned sessions that haven't been notified
-    const { data: abandonedSessions, error } = await supabase
-      .from('form_abandonment') 
-      .select('*')
-      .eq('admin_notified', false)
-      .neq('current_step', 'submitted') // Don't alert on completed forms
-    
-    if (error) throw error
-
-    console.log('📊 Found', abandonedSessions?.length || 0, 'unnotified sessions')
-
-    const newAbandonment = []
-    
-    for (const session of abandonedSessions || []) {
-      const lastActivity = new Date(session.last_activity)
-      const stepThreshold = abandonmentThresholds[session.current_step as keyof typeof abandonmentThresholds] || abandonmentThresholds.contact
-      const timeSinceLastActivity = now.getTime() - lastActivity.getTime()
+  
+      console.log('🔍 Checking for abandonments at:', now.toISOString())
+  
+      const { data: abandonedSessions, error } = await supabase
+        .from('form_abandonment') 
+        .select('*')
+        .eq('admin_notified', false)
+        .neq('current_step', 'submitted')
       
-      console.log(`⏰ Session ${session.email}: ${timeSinceLastActivity}ms ago, threshold: ${stepThreshold}ms`)
+      if (error) throw error
+  
+      console.log('📊 Found', abandonedSessions?.length || 0, 'unnotified sessions')
+  
+      const newAbandonment = []
       
-      if (timeSinceLastActivity > stepThreshold) {
-        newAbandonment.push(session)
-        console.log(`🚨 ABANDONMENT: ${session.email} at step ${session.current_step}`)
+      for (const session of abandonedSessions || []) {
+        const lastActivity = new Date(session.last_activity)
+        const stepThreshold = abandonmentThresholds[session.current_step as keyof typeof abandonmentThresholds] || abandonmentThresholds.contact
+        const timeSinceLastActivity = now.getTime() - lastActivity.getTime()
+        
+        console.log(`⏰ Session ${session.email}: ${timeSinceLastActivity}ms ago, threshold: ${stepThreshold}ms`)
+        
+        if (timeSinceLastActivity > stepThreshold) {
+          newAbandonment.push(session)
+          console.log(`🚨 ABANDONMENT: ${session.email} at step ${session.current_step}`)
+        }
       }
-    }
-
-    // Send admin notification if there are new abandonments
-    if (newAbandonment.length > 0) {
-      console.log('📧 Sending admin notification for', newAbandonment.length, 'abandonments')
-      await sendAdminAbandonmentAlert(newAbandonment)
+  
+      if (newAbandonment.length > 0) {
+        console.log('📧 Sending admin notification for', newAbandonment.length, 'abandonments')
+        await sendAdminAbandonmentAlert(newAbandonment)
+        
+        const sessionIds = newAbandonment.map(s => s.session_id)
+        await supabase
+          .from('form_abandonment')
+          .update({ admin_notified: true })
+          .in('session_id', sessionIds)
+      }
+  
+      return NextResponse.json({ 
+        success: true, 
+        abandonments: newAbandonment.length,
+        processed: newAbandonment.map(s => ({ email: s.email, step: s.current_step }))
+      })
       
-      // Mark as notified
-      const sessionIds = newAbandonment.map(s => s.session_id)
-      await supabase
-        .from('form_abandonment')
-        .update({ admin_notified: true })
-        .in('session_id', sessionIds)
+    } catch (error) {
+      console.error('❌ Abandonment check error:', error)
+      return NextResponse.json({ success: false, error }, { status: 500 })
     }
-
-    return NextResponse.json({ 
-      success: true, 
-      abandonments: newAbandonment.length,
-      processed: newAbandonment.map(s => ({ email: s.email, step: s.current_step }))
-    })
-    
-  } catch (error) {
-    console.error('❌ Abandonment check error:', error)
-    return NextResponse.json({ success: false, error }, { status: 500 })
   }
-}
 
 async function sendAdminAbandonmentAlert(abandonments: any[]) {
     const getStepLabel = (step: string) => {
