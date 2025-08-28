@@ -524,32 +524,43 @@ if (!pagesError && !deadlineError && !filesError) {
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
           <Button
-  type="button"
-  onClick={onBack}
-  disabled={isSubmitting}
-  className="h-12 px-6 rounded-lg bg-black text-white hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
->
-  <ArrowLeftIcon className="w-4 h-4" />
-  Back
-</Button>
-            
-            <Button 
-              type="submit" 
-              disabled={!isValid || isSubmitting}
-              className="h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:border-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Continue to Checkout
-                  <ArrowRightIcon className="w-4 h-4" />
-                </>
-              )}
-            </Button>
+            type="button"
+            onClick={onBack}
+            disabled={isSubmitting}
+            className="h-12 px-6 font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:opacity-50 transition-colors cursor-pointer"
+            style={{ 
+              backgroundColor: '#e6e6e6', 
+              color: '#1b1b20',
+              borderRadius: '6px'
+            }}
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            Back
+          </Button>
+                      
+          <Button 
+            type="submit" 
+            disabled={!isValid || isSubmitting}
+            className="h-12 px-6 text-white font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:bg-gray-300 disabled:text-gray-500 transition-colors cursor-pointer"
+            style={{ 
+              backgroundColor: '#1b1b20',
+              borderRadius: '6px'
+            }}
+            onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#0f0f14')}
+            onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#1b1b20')}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                Processing...
+              </>
+            ) : (
+              <>
+                Continue to Checkout
+                <ArrowRightIcon className="w-4 h-4" />
+              </>
+            )}
+          </Button>
           </div>
 
           <p className="text-xs text-gray-800 text-center">

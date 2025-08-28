@@ -20,25 +20,27 @@ interface ServiceOption {
   title: string
   description: string
   icon: React.ComponentType<React.ComponentProps<'svg'>>
+  popular?: boolean
 }
 
 const services: ServiceOption[] = [
   {
     value: 'writing',
     title: 'Writing',
-    description: 'Get an original essay, research paper, or report from scratch.',
-    icon: DocumentTextIcon
+    description: 'Essays, reports, research papers',
+    icon: DocumentTextIcon,
+    popular: true
   },
   {
     value: 'editing',
     title: 'Editing',
-    description: 'Have your existing draft proofread for grammar, clarity, and flow.',
+    description: 'Proofreading, grammar, clarity',
     icon: PencilSquareIcon
   },
   {
     value: 'presentation',
     title: 'Presentation',
-    description: 'Receive designer-quality slides with compelling speaker notes.',
+    description: 'Designer-quality slides + notes',
     icon: PresentationChartLineIcon
   }
 ]
@@ -85,20 +87,27 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-8">
+    <div className="mx-auto max-w-xl space-y-6 pb-24 lg:pb-8">
+      {/* Header with micro-trust */}
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">
           What type of help do you need?
         </h2>
-        <p className="mt-3 text-lg text-gray-600">
-          Choose the service that best fits your academic needs
+        <p className="mt-3 text-base text-gray-600">
+          We'll tailor the next steps based on your choice.
         </p>
+        <div className="mt-2 flex items-center justify-center gap-2 text-sm">
+          <span className="inline-flex items-center gap-1 text-purple-600 font-medium">
+            <CheckIcon className="w-4 h-4" />
+            Trusted by 5,000+ students this month
+          </span>
+        </div>
       </div>
 
       <RadioGroup
         value={selectedValue || ''}
         onValueChange={(v) => handleSelect(v as ServiceType)}
-        className="space-y-4"
+        className="space-y-3"
         aria-label="Service Type"
       >
         {services.map((service) => {
@@ -118,43 +127,46 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
                   }
                 }}
                 className={`
-                  px-6 py-4 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white
+                  px-4 py-4 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white hover:border-purple-300
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2
                   ${
                     selected
                       ? 'border-purple-500 shadow-md bg-purple-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200'
                   }
                 `}
+                style={{ borderRadius: '6px' }}
               >
-                <div className="flex items-start gap-5">
-                  {/* Icon */}
-                  <div className="mt-2 flex-shrink-0">
-                    <Icon className={`h-8 w-8 ${selected ? 'text-purple-600' : 'text-gray-600'}`} />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <h3 className={`text-xl font-semibold ${selected ? 'text-purple-900' : 'text-gray-900'}`}>
+                <div className="flex items-center justify-between">
+                  {/* Left side: Icon + Content */}
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex-shrink-0">
+                      <Icon className={`h-6 w-6 ${selected ? 'text-purple-600' : 'text-gray-600'}`} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className={`text-lg font-semibold ${selected ? 'text-purple-900' : 'text-gray-900'}`}>
                           {service.title}
                         </h3>
-                      </div>
-
-                      {/* Selection chip - green for confirmation */}
-                      {selected && (
-                        <div className="flex items-center">
-                          <Badge className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-                            <CheckIcon className="w-3 h-3" />
-                            Selected
+                        {service.popular && (
+                          <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs px-2 py-0.5">
+                            Popular
                           </Badge>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                      <p className={`text-sm leading-relaxed ${selected ? 'text-purple-700' : 'text-gray-600'}`}>
+                        {service.description}
+                      </p>
                     </div>
+                  </div>
 
-                    <p className={`mt-2 text-sm leading-relaxed ${selected ? 'text-purple-700' : 'text-gray-600'}`}>
-                      {service.description}
-                    </p>
+                  {/* Right side: Selection indicator */}
+                  <div className="flex-shrink-0">
+                    {selected && (
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                        <CheckIcon className="w-4 h-4 text-green-600" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -172,19 +184,26 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
         })}
       </RadioGroup>
 
-      {/* Next Button - purple styling to match theme */}
-      {selectedValue && (
-        <div className="flex justify-end pt-2">
-          <Button 
-            onClick={handleNext}
-            size="lg"
-            className="px-6 py-3 text-base flex items-center gap-2 bg-purple-600 text-white hover:bg-purple-700"
-          >
-            Next
-            <ArrowRightIcon className="w-4 h-4" />
-          </Button>
-        </div>
-      )}
+      {/* Sticky Next button for mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:static lg:p-0 lg:border-t-0">
+        <Button 
+          onClick={handleNext}
+          disabled={!selectedValue}
+          className="w-full h-12 text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          style={{ 
+            backgroundColor: '#1b1b20', 
+            borderRadius: '6px'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0f0f14'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1b1b20'}
+        >
+          Continue
+          <ArrowRightIcon className="w-4 h-4" />
+        </Button>
+        <p className="text-xs text-gray-500 text-center mt-2">
+          Takes less than 10 seconds
+        </p>
+      </div>
     </div>
   )
 }

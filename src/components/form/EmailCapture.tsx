@@ -335,20 +335,31 @@ export default function EmailCapture({
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
           <Button
-  type="button"
-  onClick={onBack}
-  disabled={isSubmitting}
-  className="px-6 rounded-lg bg-black text-white hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full" style={{ height: '54px', border: '1px solid #0f0f10' }}
->
-  <ArrowLeftIcon className="w-4 h-4" />
-  Back
-</Button>
+            type="button"
+            onClick={onBack}
+            disabled={isSubmitting}
+            className="px-6 h-12 font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:opacity-50 transition-colors cursor-pointer"
+            style={{ 
+              backgroundColor: '#e6e6e6', 
+              color: '#1b1b20',
+              borderRadius: '6px'
+            }}
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            Back
+          </Button>
             
-            <Button
-              type="submit"
-              disabled={!isValid || isSubmitting}
-              className="px-6 rounded-lg text-white disabled:bg-gray-300 disabled:text-gray-500 transition-colors flex items-center justify-center gap-2 font-medium sm:w-auto w-full" style={{ height: '54px', backgroundColor: '#8800e9', border: '1px solid #8800e9' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7000d1'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#8800e9'}
-              >
+          <Button
+            type="submit"
+            disabled={!isValid || isSubmitting}
+            className="px-6 h-12 text-white font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:bg-gray-300 disabled:text-gray-500 transition-colors cursor-pointer"
+            style={{ 
+              backgroundColor: '#1b1b20',
+              borderRadius: '6px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0f0f14'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1b1b20'}
+          >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
