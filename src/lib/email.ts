@@ -261,25 +261,24 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
 // Simple recovery email for customer
 function generateCustomerEmailHTML(data: OrderEmailData): string {
   return `
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Complete Your Order</title>
+  <title>Secure Your Expert Now</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5;">
   <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-    
+
     <!-- Header -->
     <div style="background: #000; color: white; padding: 25px; text-align: center;">
       <img 
-  src="https://domyhomework.b-cdn.net/wp-content/uploads/2025/06/DMH-New-Logo.png" 
-  alt="DoMyHomework Logo" 
-  style="max-height: 32px; margin-bottom: 10px; filter: brightness(0) invert(1);" 
-/>
-
-      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Almost Done! 🎓</h1>
-      <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 15px;">Your order details are safely saved</p>
+        src="https://domyhomework.b-cdn.net/wp-content/uploads/2025/06/DMH-New-Logo.png" 
+        alt="DoMyHomework Logo" 
+        style="max-height: 32px; margin-bottom: 10px; filter: brightness(0) invert(1);" 
+      />
+      <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Your Order is Saved 🎓</h1>
+      <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 15px;">Secure your expert in minutes</p>
     </div>
 
     <!-- Content -->
@@ -288,21 +287,18 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
         Hi <strong>${data.customerName}</strong>,
       </p>
       
-      <p style="font-size: 16px; margin-bottom: 20px; line-height: 1.6; color:#555;">
-        Thank you for choosing DoMyHomework! Your order details have been securely saved, and you're just one step away from getting expert help with your ${data.serviceType} project.
+      <p style="font-size: 16px; margin-bottom: 20px; color:#555;">
+        Your <strong>${data.subject}</strong> ${data.serviceType} is ready to begin.  
+        Confirm payment today and our expert will start work within <strong>2 hours</strong>.
       </p>
 
-      <!-- Order Summary -->
+      <!-- Order Summary (Minimal) -->
       <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0;">
-        <h3 style="margin: 0 0 15px 0; color: #8800e9; font-size: 18px;">📋 Your Order Summary</h3>
+        <h3 style="margin: 0 0 15px 0; color: #8800e9; font-size: 18px;">📋 Order #${data.orderId.slice(0, 8).toUpperCase()}</h3>
         <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
           <tr>
-            <td style="padding: 6px 0; color: #666;">Order ID:</td>
-            <td style="padding: 6px 0; font-weight: bold; font-family: monospace;">#${data.orderId.slice(0, 8).toUpperCase()}</td>
-          </tr>
-          <tr>
             <td style="padding: 6px 0; color: #666;">Service:</td>
-            <td style="padding: 6px 0; text-transform: capitalize;">${data.serviceType}</td>
+            <td style="padding: 6px 0; font-weight: bold; text-transform: capitalize;">${data.serviceType}</td>
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #666;">Subject:</td>
@@ -314,7 +310,7 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
           </tr>
           <tr>
             <td style="padding: 6px 0; color: #666;">Deadline:</td>
-            <td style="padding: 6px 0;">${data.deadline} day${data.deadline !== '1' ? 's' : ''}</td>
+            <td style="padding: 6px 0; font-weight: bold; color:#d9534f;">${data.deadline} day${data.deadline !== '1' ? 's' : ''}</td>
           </tr>
           <tr style="border-top: 1px solid #ddd; font-weight: bold;">
             <td style="padding: 10px 0 5px 0; color: #8800e9;">Total:</td>
@@ -326,13 +322,19 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
       <!-- CTA Button -->
       <div style="text-align: center; margin: 30px 0;">
         <a href="${data.checkoutUrl}" style="display: inline-block; background: #8800e9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-          Complete Your Payment
+          Secure My Expert Now
         </a>
       </div>
 
-      <p style="font-size: 14px; color: #666; text-align: center; margin-top: 20px;">
-        💡 <strong>Tip:</strong> Save this email! You can return to complete your payment anytime using the button above.
+      <p style="font-size: 14px; color: #666; text-align: center; margin-top: 10px;">
+        ⏳ <strong>Tip:</strong> Experts are assigned quickly. Complete payment today to lock in your deadline.
       </p>
+
+      <!-- Social Proof -->
+      <div style="background: #fef9f5; border: 1px solid #f3e1d0; border-radius: 8px; padding: 15px; margin-top: 25px; text-align: center; font-size: 14px; color: #555;">
+        ⭐⭐⭐⭐⭐ Trusted by <strong>12,000+ students</strong><br/>
+        “Saved me hours on my Statistics project” – Maria, USA
+      </div>
 
       <!-- Guarantees -->
       <div style="border-top: 1px solid #e5e5e5; margin-top: 30px; padding-top: 20px;">
@@ -352,12 +354,19 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
           </div>
         </div>
       </div>
+
+      <!-- Second CTA -->
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${data.checkoutUrl}" style="display: inline-block; background: #8800e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">
+          Complete Payment
+        </a>
+      </div>
     </div>
 
     <!-- Footer -->
     <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e5e5e5;">
       <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-        Questions? Reply to this email or contact us anytime.
+        Need help? Just reply to this email — we’re online 24/7.
       </p>
       <p style="margin: 0; color: #999; font-size: 12px;">
         DoMyHomework | Professional Homework Help Services
@@ -368,6 +377,7 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
 </html>
   `
 }
+
 
 // Text versions
 function generateAdminEmailText(data: OrderEmailData): string {
