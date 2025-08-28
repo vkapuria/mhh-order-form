@@ -93,6 +93,16 @@ function getDeadlineDate(days: string): string {
       day: 'numeric' 
     })
   }
+
+  function getUnitLabels(serviceType: string) {
+    const isPresentation = serviceType === 'presentation'
+    return {
+      unitSingular: isPresentation ? 'slide' : 'page',
+      unitPlural: isPresentation ? 'slides' : 'pages',
+      unitLabel: isPresentation ? 'Slides' : 'Pages',
+    }
+  }
+  
 // WP Forms style HTML template for admin
 function generateAdminEmailHTML(data: OrderEmailData): string {
   const filesSection = data.hasFiles && data.uploadedFiles && data.uploadedFiles.length > 0 
@@ -191,8 +201,7 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
           <td style="padding: 12px; text-transform: capitalize;">${data.documentType.replace(/_/g, ' ')}</td>
         </tr>
         <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Pages</td>
-          <td style="padding: 12px;">${data.pages} page${data.pages !== 1 ? 's' : ''}</td>
+          ${(() => { const { unitSingular, unitPlural, unitLabel } = getUnitLabels(data.serviceType); return `<td style="padding: 12px; background: #f9f9f9; font-weight: bold;">${unitLabel}</td><td style=\"padding: 12px;\">${data.pages} ${data.pages === 1 ? unitSingular : unitPlural}</td>` })()}
         </tr>
         <tr>
           <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Deadline</td>
@@ -305,7 +314,7 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
             <td style="padding: 6px 0; text-transform: capitalize;">${data.subject}</td>
           </tr>
           <tr>
-            <td style="padding: 6px 0; color: #666;">Pages:</td>
+            <td style="padding: 6px 0; color: #666;">${getUnitLabels(data.serviceType).unitLabel}:</td>
             <td style="padding: 6px 0;">${data.pages}</td>
           </tr>
           <tr>
@@ -402,6 +411,8 @@ ORDER DETAILS:
 - Subject: ${data.subject}
 - Document Type: ${data.documentType.replace(/_/g, ' ')}
 - Pages: ${data.pages}
+ - ${getUnitLabels(data.serviceType).unitLabel}: ${data.pages}
+ - ${getUnitLabels(data.serviceType).unitLabel}: ${data.pages}
 - Deadline: ${data.deadline} days
 - Reference Style: ${data.referenceStyle.toUpperCase()}
 ${data.instructions ? `- Instructions: ${data.instructions}` : ''}${filesSection}

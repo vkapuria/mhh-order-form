@@ -106,6 +106,12 @@ function CheckoutContent() {
     )
   }
 
+  // --- unit helpers for presentation vs others ---
+const isPresentation = orderData?.serviceType === 'presentation'
+const unitsLabel = isPresentation ? 'Slides' : 'Pages'
+const unitSingular = isPresentation ? 'slide' : 'page'
+
+
   return (
     <div className="min-h-screen bg-white">
       {/* Optimized sticky mobile pay bar - only shows when payment form out of view */}
@@ -229,13 +235,18 @@ function CheckoutContent() {
                     <span className="text-gray-600 font-medium">Assignment</span>
                     <div className="text-right">
                       <div className="font-semibold">
-                        {orderData.pages} page{orderData.pages > 1 ? 's' : ''} • {orderData.deadline} day{orderData.deadline !== '1' ? 's' : ''}
+                        {orderData.pages}{' '}
+                        {orderData.pages === 1 ? unitSingular : unitsLabel.toLowerCase()} •{' '}
+                        {orderData.deadline} day{orderData.deadline !== '1' ? 's' : ''}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {orderData.pages * 275} words • Due {getDeliveryDate(orderData.deadline)}
+                        {isPresentation
+                          ? <>Due {getDeliveryDate(orderData.deadline)}</>
+                          : <>{orderData.pages * 275} words • Due {getDeliveryDate(orderData.deadline)}</>}
                       </div>
                     </div>
                   </div>
+
                   <div className="flex items-center justify-between py-3 bg-purple-50 px-4 rounded-lg">
                     <span className="font-semibold text-lg">Total</span>
                     <span className="font-bold text-2xl text-purple-600">${totalPrice.toFixed(2)}</span>

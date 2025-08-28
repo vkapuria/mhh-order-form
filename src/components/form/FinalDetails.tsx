@@ -11,7 +11,6 @@ import { calculateEnhancedPricing } from '@/lib/pricing/engine'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   ClockIcon,
-  DocumentDuplicateIcon,
   HashtagIcon,
   PaperClipIcon,
   MinusIcon,
@@ -20,7 +19,6 @@ import {
   ArrowRightIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
 
 interface FinalDetailsProps {
   data: {
@@ -29,6 +27,8 @@ interface FinalDetailsProps {
     pages: number
     hasFiles: boolean | undefined
     files?: File[]
+    // Presentation only (optional)
+    speakerNotes?: boolean
   }
   previousData?: {
     serviceType: string
@@ -50,7 +50,6 @@ interface ValidationErrors {
   files?: string
 }
 
-
 const getDeadlineDate = (days: string) => {
   const date = new Date()
   date.setDate(date.getDate() + parseInt(days))
@@ -70,16 +69,6 @@ const deadlines = [
   { value: '1', label: '24 Hours', date: getDeadlineDate('1'), tag: 'Very Urgent' },
 ]
 
-const referenceStyles = [
-  { value: 'apa', label: 'APA' },
-  { value: 'mla', label: 'MLA' },
-  { value: 'chicago', label: 'Chicago/Turabian' },
-  { value: 'harvard', label: 'Harvard' },
-  { value: 'ieee', label: 'IEEE' },
-  { value: 'vancouver', label: 'Vancouver' },
-  { value: 'none', label: 'No specific style' },
-]
-
 const allowedFileTypes = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'ppt', 'pptx']
 const maxFileSize = 10 * 1024 * 1024 // 10MB
 
@@ -92,13 +81,16 @@ export default function FinalDetails({
   isSubmitting = false
 }: FinalDetailsProps) {
   const [errors, setErrors] = useState<ValidationErrors>({})
-  const [touched, setTouched] = useState({ 
-    pages: false, 
-    deadline: false, 
-    files: false 
+  const [touched, setTouched] = useState({
+    pages: false,
+    deadline: false,
+    files: false
   })
-  
+
   const mainFormRef = useRef<HTMLDivElement>(null)
+
+  const isPresentation = previousData?.serviceType === 'presentation'
+  const unitLabel = isPresentation ? 'slides' : 'pages'
 
   // Validation functions
   const validatePages = (pages: number): string | null => {
@@ -114,117 +106,99 @@ export default function FinalDetails({
     return null
   }
 
-  const validateReferenceStyle = (referenceStyle: string): string | null => {
-    if (!referenceStyle || referenceStyle.trim() === '') return 'Please select a reference style'
-    return null
-  }
-
   const validateFiles = (files?: File[]): string | null => {
     if (!data.hasFiles || !files || files.length === 0) return null
-
     for (const file of files) {
-      // Check file size
       if (file.size > maxFileSize) {
         return `File "${file.name}" is too large. Maximum size is 10MB.`
       }
-
-      // Check file type
       const fileExtension = file.name.split('.').pop()?.toLowerCase()
       if (!fileExtension || !allowedFileTypes.includes(fileExtension)) {
         return `File type ".${fileExtension}" is not supported. Allowed: ${allowedFileTypes.join(', ').toUpperCase()}`
       }
     }
-
     return null
   }
 
-  // Handle field changes with validation clearing
+  // Handlers
   const handlePagesChange = (value: number) => {
     onChange('pages', value)
-    // Clear error when user enters valid number
-    if (errors.pages && value >= 1 && value <= 100) {
+    if (errors.pages && value >= 1 && value <= 100 && Number.isInteger(value)) {
       setErrors(prev => ({ ...prev, pages: undefined }))
     }
   }
 
   const handleDeadlineChange = (value: string) => {
     onChange('deadline', value)
-    // Clear error when user selects something
     if (errors.deadline && value) {
       setErrors(prev => ({ ...prev, deadline: undefined }))
     }
   }
 
-  // Form submission
+  // Submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Mark all required fields as touched
-setTouched({ 
-  pages: true, 
-  deadline: true, 
-  files: true 
-})
+    setTouched({
+      pages: true,
+      deadline: true,
+      files: true
+    })
 
-// Validate all required fields
-const pagesError = validatePages(data.pages)
-const deadlineError = validateDeadline(data.deadline)
-const filesError = data.hasFiles === undefined ? 'Please choose whether you want to attach files' : null
+    const pagesError = validatePages(data.pages)
+    const deadlineError = validateDeadline(data.deadline)
+    const filesError = data.hasFiles === undefined ? 'Please choose whether you want to attach files' : null
 
-setErrors({
-  pages: pagesError || undefined,
-  deadline: deadlineError || undefined,
-  files: filesError || undefined
-})
+    setErrors({
+      pages: pagesError || undefined,
+      deadline: deadlineError || undefined,
+      files: filesError || undefined
+    })
 
-
-// Proceed if no errors
-if (!pagesError && !deadlineError && !filesError) {
-  onSubmit()
-}
+    if (!pagesError && !deadlineError && !filesError) {
+      onSubmit()
+    }
   }
 
-
-  // Auto-scroll effect
   // Auto-scroll effect (respect reduced motion)
-useEffect(() => {
-  if (!mainFormRef.current) return
+  useEffect(() => {
+    if (!mainFormRef.current) return
 
-  const targetTop = mainFormRef.current.offsetTop - 20
-  const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    const targetTop = mainFormRef.current.offsetTop - 20
+    const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-  if (prefersReduced) {
-    window.scrollTo(0, targetTop)
-    return
-  }
-
-  setTimeout(() => {
-    const startPosition = window.pageYOffset
-    const distance = targetTop - startPosition
-    const duration = 800
-    let start: number | null = null
-
-    function animation(currentTime: number): void {
-      if (start === null) start = currentTime
-      const timeElapsed = currentTime - start
-      const t = timeElapsed / (duration / 2)
-      const eased =
-        t < 1
-          ? (distance / 2) * t * t * t + startPosition
-          : (distance / 2) * ((t - 2) * (t - 2) * (t - 2) + 2) + startPosition
-      window.scrollTo(0, eased)
-      if (timeElapsed < duration) requestAnimationFrame(animation)
+    if (prefersReduced) {
+      window.scrollTo(0, targetTop)
+      return
     }
 
-    requestAnimationFrame(animation)
-  }, 1000) // keep your original delay
-}, [])
+    setTimeout(() => {
+      const startPosition = window.pageYOffset
+      const distance = targetTop - startPosition
+      const duration = 800
+      let start: number | null = null
 
+      function animation(currentTime: number): void {
+        if (start === null) start = currentTime
+        const timeElapsed = currentTime - start
+        const t = timeElapsed / (duration / 2)
+        const eased =
+          t < 1
+            ? (distance / 2) * t * t * t + startPosition
+            : (distance / 2) * ((t - 2) * (t - 2) * (t - 2) + 2) + startPosition
+        window.scrollTo(0, eased)
+        if (timeElapsed < duration) requestAnimationFrame(animation)
+      }
 
-  const isValid = data.pages > 0 && 
-                data.deadline.length > 0 && 
-                data.hasFiles !== undefined &&
-                (data.hasFiles === false || (data.hasFiles === true && data.files && data.files.length > 0))
+      requestAnimationFrame(animation)
+    }, 1000)
+  }, [])
+
+  const isValid =
+    data.pages > 0 &&
+    data.deadline.length > 0 &&
+    data.hasFiles !== undefined &&
+    (data.hasFiles === false || (data.hasFiles === true && data.files && data.files.length > 0))
 
   return (
     <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
@@ -262,81 +236,91 @@ useEffect(() => {
       <Card ref={mainFormRef} className="px-0 py-8 border-0 shadow-none lg:p-8 lg:shadow-sm lg:border lg:border-gray-200">
         {/* Header */}
         <div className="mb-6">
-  <h2 className="text-xl font-bold text-gray-900 mb-1">Almost Done</h2>
-  <p className="text-gray-600 text-base">
-    Set pages and deadline. You can<span 
-      className="relative inline-block font-medium text-gray-800"
-      style={{
-        backgroundImage: 'url(/icons/marker.svg)',
-        backgroundSize: '95% 40%',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center calc(100% + 2px)',
-        padding: '2px 4px 8px 4px',
-        transform: 'rotate(-1deg)',
-      }}
-    >attach files</span>if needed.
-  </p>
-</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Almost Done</h2>
+          <p className="text-gray-600 text-base">
+            Set {unitLabel} and deadline. You can
+            <span
+              className="relative inline-block font-medium text-gray-800"
+              style={{
+                backgroundImage: 'url(/icons/marker.svg)',
+                backgroundSize: '95% 40%',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center calc(100% + 2px)',
+                padding: '2px 4px 8px 4px',
+                transform: 'rotate(-1deg)',
+              }}
+            >
+              {' '}attach files{' '}
+            </span>
+            if needed.
+          </p>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
-          
-          {/* Row 1: Pages + Deadline */}
+          {/* Row 1: Pages/Slides + Deadline */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-            
-            {/* Pages Field */}
+            {/* Pages/Slides Field */}
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-base font-semibold text-black mb-2">
                 <HashtagIcon className="w-5 h-5" />
-                Number of Pages<span className="text-red-500">*</span>
+                {isPresentation ? 'Number of Slides' : 'Number of Pages'}
+                <span className="text-red-500">*</span>
               </Label>
-              
+
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => handlePagesChange(Math.max(1, (data.pages || 1) - 1))}
                   disabled={(data.pages || 0) <= 1}
-                  className="w-12 flex items-center justify-center rounded-lg hover:bg-gray-50 disabled:opacity-40" style={{ height: '54px', border: '1px solid #0f0f10' }}
+                  className="w-12 flex items-center justify-center rounded-lg hover:bg-gray-50 disabled:opacity-40"
+                  style={{ height: '54px', border: '1px solid #0f0f10' }}
                 >
                   <MinusIcon className="w-4 h-4 text-gray-600" />
                 </button>
-                
+
                 <div className="relative flex-1">
-  <Input
-    type="number"
-    value={data.pages || ''}
-    onChange={(e) => {
-      const val = parseInt(e.target.value) || 0
-      handlePagesChange(Math.max(0, Math.min(100, val)))
-    }}
-    className="text-base text-center rounded-lg focus:ring-0 focus-visible:ring-0" style={{ height: '54px', border: '1px solid #0f0f10' }}
-    placeholder="0"
-    min={1}
-    max={100}
-  />
-</div>
-                
+                  <Input
+                    type="number"
+                    value={data.pages || ''}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 0
+                      handlePagesChange(Math.max(0, Math.min(100, val)))
+                    }}
+                    className="text-base text-center rounded-lg focus:ring-0 focus-visible:ring-0"
+                    style={{ height: '54px', border: '1px solid #0f0f10' }}
+                    placeholder="0"
+                    min={1}
+                    max={100}
+                  />
+                </div>
+
                 <button
                   type="button"
                   onClick={() => handlePagesChange(Math.min(100, (data.pages || 0) + 1))}
                   disabled={(data.pages || 0) >= 100}
-                  className="w-12 flex items-center justify-center rounded-lg hover:bg-gray-50 disabled:opacity-40" style={{ height: '54px', border: '1px solid #0f0f10' }}
+                  className="w-12 flex items-center justify-center rounded-lg hover:bg-gray-50 disabled:opacity-40"
+                  style={{ height: '54px', border: '1px solid #0f0f10' }}
                 >
                   <PlusIcon className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
 
-              {/* Error Message */}
+              {/* Error */}
               {errors.pages && touched.pages && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   {errors.pages}
                 </p>
               )}
-              
+
               {/* Help Text */}
               {!errors.pages && (
-                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>~275 words per page.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>
+                  {isPresentation
+                    ? 'Count each slide including title, agenda, and summary.'
+                    : '~275 words per page.'}
+                </p>
               )}
             </div>
 
@@ -346,13 +330,13 @@ useEffect(() => {
                 <ClockIcon className="w-5 h-5" />
                 Deadline<span className="text-red-500">*</span>
               </Label>
-              
+
               <div className="relative">
-                <Select 
-                  value={data.deadline} 
+                <Select
+                  value={data.deadline}
                   onValueChange={handleDeadlineChange}
                 >
-                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}                  >
+                  <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
                     <SelectValue placeholder="Select a deadline" />
                   </SelectTrigger>
                   <SelectContent>
@@ -379,101 +363,102 @@ useEffect(() => {
                 </Select>
               </div>
 
-              {/* Error Message */}
+              {/* Error */}
               {errors.deadline && touched.deadline && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="h-4 w-4" />
                   {errors.deadline}
                 </p>
               )}
-              
+
               {/* Help Text */}
               {!errors.deadline && (
-                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>Tighter deadlines include a rush fee.</p>
+                <p className="text-xs text-gray-800 text-center" style={{ marginTop: '-6px' }}>
+                  Tighter deadlines include a rush fee.
+                </p>
               )}
             </div>
           </div>
 
-          {/* Row 2: File Upload Decision (Full Width) */}
+          {/* Row 2: File Upload Decision */}
           <div className="space-y-4 lg:space-y-6">
-  
-  {/* File Upload Choice - Mandatory */}
-  <div className="space-y-3">
-    <Label className="flex items-center gap-2 text-base font-semibold text-black mb-4">
-      <PaperClipIcon className="w-5 h-5" />
-      Do you have files to attach?<span className="text-red-500">*</span>
-    </Label>
-    
-    {/* Yes/No Toggle Buttons */}
-<div className="flex gap-8">
-<button
-  type="button"
-  onClick={(e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    onChange('hasFiles', true)
-  }}
-  className={`flex-1 font-medium transition-all rounded-lg ${
-    data.hasFiles === true 
-      ? 'bg-black text-white' 
-      : 'bg-white text-gray-700 hover:bg-gray-50'
-  }`}
-  style={{ 
-    height: '54px', 
-    border: data.hasFiles === true ? '1px solid #000000' : '1px solid #0f0f10'
-  }}
->
-  <span className="sm:hidden">📎 Yes</span>
-  <span className="hidden sm:inline">📎 Yes, I have files to attach</span>
-</button>
-  
-<button
-  type="button"
-  onClick={(e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    onChange('hasFiles', false)
-    onChange('files', [])
-  }}
-  className={`flex-1 font-medium transition-all rounded-lg ${
-    data.hasFiles === false 
-      ? 'bg-black text-white' 
-      : 'bg-white text-gray-700 hover:bg-gray-50'
-  }`}
-  style={{ 
-    height: '54px', 
-    border: data.hasFiles === false ? '1px solid #000000' : '1px solid #0f0f10'
-  }}
->
-  <span className="sm:hidden">❌ No</span>
-  <span className="hidden sm:inline">❌ No files to attach</span>
-</button>
-</div>
+            {/* File Upload Choice - Mandatory */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2 text-base font-semibold text-black mb-4">
+                <PaperClipIcon className="w-5 h-5" />
+                Do you have files to attach?<span className="text-red-500">*</span>
+              </Label>
 
-    {/* Error for not selecting */}
-    {data.hasFiles === undefined && touched.files && (
-      <p className="text-sm text-red-600 flex items-center gap-1">
-        <ExclamationTriangleIcon className="h-4 w-4" />
-        Please choose whether you want to attach files
-      </p>
-    )}
-  </div>
+              {/* Yes/No Toggle Buttons */}
+              <div className="flex gap-8">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onChange('hasFiles', true)
+                  }}
+                  className={`flex-1 font-medium transition-all rounded-lg ${
+                    data.hasFiles === true
+                      ? 'bg-black text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                  style={{
+                    height: '54px',
+                    border: data.hasFiles === true ? '1px solid #000000' : '1px solid #0f0f10'
+                  }}
+                >
+                  <span className="sm:hidden">📎 Yes</span>
+                  <span className="hidden sm:inline">📎 Yes, I have files to attach</span>
+                </button>
 
-  {/* File Upload Component - Full Width */}
-  {data.hasFiles === true && (
-    <div className="border-t pt-4 lg:pt-6">
-      <FileUpload
-        files={data.files || []}
-        onChange={(files) => {
-          onChange('files', files)
-        }}
-        maxFiles={5}
-        maxSizePerFile={10}
-        acceptedTypes={['pdf', 'doc', 'docx', 'txt', 'rtf', 'ppt', 'pptx']}
-      />
-    </div>
-  )}
-</div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onChange('hasFiles', false)
+                    onChange('files', [])
+                  }}
+                  className={`flex-1 font-medium transition-all rounded-lg ${
+                    data.hasFiles === false
+                      ? 'bg-black text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                  style={{
+                    height: '54px',
+                    border: data.hasFiles === false ? '1px solid #000000' : '1px solid #0f0f10'
+                  }}
+                >
+                  <span className="sm:hidden">❌ No</span>
+                  <span className="hidden sm:inline">❌ No files to attach</span>
+                </button>
+              </div>
+
+              {/* Error for not selecting */}
+              {data.hasFiles === undefined && touched.files && (
+                <p className="text-sm text-red-600 flex items-center gap-1">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  Please choose whether you want to attach files
+                </p>
+              )}
+            </div>
+
+            {/* File Upload Component */}
+            {data.hasFiles === true && (
+              <div className="border-t pt-4 lg:pt-6">
+                <FileUpload
+                  files={data.files || []}
+                  onChange={(files) => {
+                    onChange('files', files)
+                  }}
+                  maxFiles={5}
+                  maxSizePerFile={10}
+                  acceptedTypes={['pdf', 'doc', 'docx', 'txt', 'rtf', 'ppt', 'pptx']}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Mobile Price Preview */}
           {isValid && (
@@ -481,24 +466,26 @@ useEffect(() => {
               <h3 className="text-lg font-semibold text-purple-900 mb-4 text-center">
                 💰 Your Price
               </h3>
-              
+
               {(() => {
                 const pricing = calculateEnhancedPricing({
-                  serviceType: previousData?.serviceType as any || 'writing',
+                  serviceType: (previousData?.serviceType as any) || 'writing',
                   pages: data.pages,
                   deadline: data.deadline,
                   documentType: previousData?.documentType || 'essay',
                 })
-                
+
                 return (
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-900 mb-2">
                       ${pricing.totalPrice.toFixed(2)}
                     </div>
                     <p className="text-sm text-purple-700 mb-4">
-                      ${pricing.pricePerPage.toFixed(2)} per page • {data.pages} page{data.pages > 1 ? 's' : ''}
+                      {isPresentation
+                        ? `$${pricing.pricePerPage.toFixed(2)} per slide • ${data.pages} slide${data.pages > 1 ? 's' : ''}`
+                        : `$${pricing.pricePerPage.toFixed(2)} per page • ${data.pages} page${data.pages > 1 ? 's' : ''}`}
                     </p>
-                    
+
                     {/* Price breakdown */}
                     <div className="bg-white rounded-lg p-4 text-left space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -526,44 +513,44 @@ useEffect(() => {
 
           {/* Navigation */}
           <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between pt-6">
-          <Button
-            type="button"
-            onClick={onBack}
-            disabled={isSubmitting}
-            className="h-12 px-6 font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:opacity-50 transition-colors cursor-pointer"
-            style={{ 
-              backgroundColor: '#e6e6e6', 
-              color: '#1b1b20',
-              borderRadius: '6px'
-            }}
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Back
-          </Button>
-                      
-          <Button 
-            type="submit" 
-            disabled={!isValid || isSubmitting}
-            className="h-12 px-6 text-white font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:bg-gray-300 disabled:text-gray-500 transition-colors cursor-pointer"
-            style={{ 
-              backgroundColor: '#1b1b20',
-              borderRadius: '6px'
-            }}
-            onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#0f0f14')}
-            onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#1b1b20')}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Processing...
-              </>
-            ) : (
-              <>
-                Continue to Checkout
-                <ArrowRightIcon className="w-4 h-4" />
-              </>
-            )}
-          </Button>
+            <Button
+              type="button"
+              onClick={onBack}
+              disabled={isSubmitting}
+              className="h-12 px-6 font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:opacity-50 transition-colors cursor-pointer"
+              style={{
+                backgroundColor: '#e6e6e6',
+                color: '#1b1b20',
+                borderRadius: '6px'
+              }}
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={!isValid || isSubmitting}
+              className="h-12 px-6 text-white font-semibold flex items-center justify-center gap-2 sm:w-auto w-full disabled:bg-gray-300 disabled:text-gray-500 transition-colors cursor-pointer"
+              style={{
+                backgroundColor: '#1b1b20',
+                borderRadius: '6px'
+              }}
+              onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#0f0f14')}
+              onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#1b1b20')}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Continue to Checkout
+                  <ArrowRightIcon className="w-4 h-4" />
+                </>
+              )}
+            </Button>
           </div>
 
           <p className="text-xs text-gray-800 text-center">

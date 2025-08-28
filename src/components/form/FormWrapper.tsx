@@ -362,36 +362,36 @@ export default function FormWrapper() {
       <div className="max-w-7xl mx-auto px-4">
         <EmailRecovery onRestoreForm={handleRestoreForm} />
       </div>
-
-      {/* 2-Column Layout: Clean like EduBirdie */}
+  
+      {/* 2-Column Layout: Clean */}
       <div className="grid grid-cols-1 lg:grid-cols-5 min-h-screen">
-        {/* LEFT SIDE: 60% width, pure white */}
-        <div className="lg:col-span-3 bg-white px-6 sm:px-8 lg:px-12 py-8 sm:py-8 lg:py-8">
+        {/* LEFT SIDE: full width on mobile, 60% on desktop */}
+        <div className="col-span-1 lg:col-span-3 bg-white px-6 sm:px-8 lg:px-12 py-8 sm:py-8 lg:py-8">
           {renderCurrentStep()}
         </div>
-
-        {/* RIGHT SIDE: 40% width, gray background */}
-<div className="lg:col-span-2 bg-gray-100 min-h-screen">
-<div className="sticky top-4 px-4 sm:px-8 lg:px-12 py-4 sm:py-6 lg:py-8 max-h-screen overflow-y-auto">
-    <PricingSidebar
-      formData={{
-        serviceType: formData.serviceType,
-        email: formData.email || '',
-        subject: formData.subject || '',
-        documentType: formData.documentType || '',
-        pages: formData.pages || 0,
-        deadline: formData.deadline || '',
-        fullName: formData.fullName || '',
-        instructions: formData.instructions || '',
-        referenceStyle: formData.referenceStyle || ''
-      }}
-      currentStep={currentStep as any}
-      completedSteps={completedSteps}
-    />
-  </div>
-</div>
+  
+        {/* RIGHT SIDE: hidden on mobile, visible on desktop */}
+        <div className="hidden lg:block lg:col-span-2 bg-gray-100 min-h-screen">
+          <div className="sticky top-4 px-4 sm:px-8 lg:px-12 py-4 sm:py-6 lg:py-8 max-h-screen overflow-y-auto">
+            <PricingSidebar
+              formData={{
+                serviceType: formData.serviceType,
+                email: formData.email || '',
+                subject: formData.subject || '',
+                documentType: formData.documentType || '',
+                pages: formData.pages || 0,
+                deadline: formData.deadline || '',
+                fullName: formData.fullName || '',
+                instructions: formData.instructions || '',
+                referenceStyle: formData.referenceStyle || ''
+              }}
+              currentStep={currentStep as any}
+              completedSteps={completedSteps}
+            />
+          </div>
+        </div>
       </div>
-
+  
       {/* Exit Intent Modal */}
       <ExitIntentModal
         isOpen={showExitIntent}
@@ -403,4 +403,4 @@ export default function FormWrapper() {
       />
     </div>
   )
-}
+  }
