@@ -34,7 +34,7 @@ export async function sendCustomerConfirmation(orderData: OrderEmailData) {
     console.log('📧 Sending customer recovery email to:', orderData.customerEmail)
     
     const { data, error } = await resend.emails.send({
-      from: 'DoMyHomework <orders@domyhomework.co>',
+      from: 'MyHomeworkHelp <orders@myhomeworkhelp.com>',
       to: [orderData.customerEmail],
       subject: 'Your Order Details Saved - Finish Payment',
       html: generateCustomerEmailHTML(orderData),
@@ -60,7 +60,7 @@ export async function sendAdminNotification(orderData: OrderEmailData) {
     console.log('📧 Sending admin pre-order alert to:', process.env.ADMIN_EMAIL)
     
     const { data, error } = await resend.emails.send({
-        from: 'DoMyHomework <orders@domyhomework.co>',
+        from: 'MyHomeworkHelp <orders@myhomeworkhelp.com>',
         to: [process.env.ADMIN_EMAIL!],
         replyTo: [orderData.customerEmail],
         subject: `Pre-Order Alert: ${orderData.customerName} (${orderData.customerCountry}): $${orderData.totalPrice}`,
@@ -146,7 +146,7 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
 
     <!-- Header -->
     <div style="background: #000; color: white; padding: 25px; text-align: center;">
-      <img src="https://domyhomework.b-cdn.net/wp-content/uploads/2025/06/DMH-New-Logo.png" alt="DoMyHomework Logo" style="max-height: 50px; display: block; margin: 0 auto 10px auto;">
+      <img src="https://myhomeworkhelp.com/wp-content/uploads/2024/03/Hero-Logo.png" alt="MyHomeworkHelp Logo" style="max-height: 50px; display: block; margin: 0 auto 10px auto;">
       <h1 style="margin: 0; font-size: 22px; font-weight: bold;">🔔 Pre-Order Alert</h1>
       <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 15px;">New order inquiry received - customer details below</p>
     </div>
@@ -258,7 +258,7 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
     <!-- Footer -->
     <div style="background: #f8f9fa; padding: 15px; text-align: center; border-top: 1px solid #e5e5e5;">
       <p style="margin: 0; color: #666; font-size: 13px;">
-        DoMyHomework | Admin Notification System 
+        MyHomeworkHelp | Admin Notification System 
       </p>
     </div>
   </div>
@@ -282,8 +282,8 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
     <!-- Header -->
     <div style="background: #000; color: white; padding: 25px; text-align: center;">
       <img 
-        src="https://domyhomework.b-cdn.net/wp-content/uploads/2025/06/DMH-New-Logo.png" 
-        alt="DoMyHomework Logo" 
+        src="https://myhomeworkhelp.com/wp-content/uploads/2024/03/Hero-Logo.png" 
+        alt="MyHomeworkHelp Logo" 
         style="max-height: 32px; margin-bottom: 10px; filter: brightness(0) invert(1);" 
       />
       <h1 style="margin: 0; font-size: 24px; font-weight: bold;">Your Order is Saved 🎓</h1>
@@ -378,7 +378,7 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
         Need help? Just reply to this email — we’re online 24/7.
       </p>
       <p style="margin: 0; color: #999; font-size: 12px;">
-        DoMyHomework | Professional Homework Help Services
+        MyHomeworkHelp | Professional Homework Help Services
       </p>
     </div>
   </div>
@@ -464,7 +464,7 @@ Academic Excellence Hub | Professional Academic Services
 export async function sendTestEmail(toEmail: string) {
   try {
     const { data, error } = await resend.emails.send({
-        from: 'DoMyHomework <orders@domyhomework.co>',
+        from: 'MyHomeworkHelp <orders@myhomeworkhelp.com>',
       to: [toEmail],
       subject: '🧪 Test Email from Academic Excellence Hub',
       html: '<h2>✅ Email system is working!</h2><p>This is a test email to verify Resend integration.</p>',

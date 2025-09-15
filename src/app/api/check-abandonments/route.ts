@@ -164,7 +164,7 @@ async function sendAdminAbandonmentAlert(abandonments: any[]) {
               <!-- Footer -->
               <tr>
                 <td style="background:#f9fafb; text-align:center; padding:15px; font-size:12px; color:#6b7280;">
-                  DoMyHomework Admin Alerts • Automated system
+                  MyHomeworkHelp Admin Alerts • Automated system
                 </td>
               </tr>
   
@@ -177,7 +177,7 @@ async function sendAdminAbandonmentAlert(abandonments: any[]) {
     `
   
     await resend.emails.send({
-      from: 'DoMyHomework Alerts <orders@domyhomework.co>',
+      from: 'MyHomeworkHelp Alerts <orders@myhomeworkhelp.com>',
       to: [process.env.ADMIN_EMAIL!],
       subject: `🚨 ${abandonments.length} Abandoned Form${abandonments.length>1 ? 's' : ''} – Follow-up Needed`,
       html

@@ -13,10 +13,10 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           
           {/* Logo - Using your actual logo */}
-          <Link href="https://domyhomework.co" className="flex items-center">
+          <Link href="https://myhomeworkhelp.com" className="flex items-center">
             <img 
               src="/icons/Logo.png" 
-              alt="DoMyHomework" 
+              alt="MyHomeworkHelp" 
               className="h-8 w-auto"
             />
           </Link>
@@ -24,38 +24,45 @@ export default function Header() {
           {/* Navigation Menu */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
-              href="https://domyhomework.co/top-writers/" 
+              href="https://myhomeworkhelp.com/pricing/" 
               className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
             >
-              Writers
+              Prices
             </Link>
             
             <Link 
-              href="https://domyhomework.co/pricing/" 
+              href="https://myhomeworkhelp.com/experts/" 
               className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
             >
-              Pricing
+              Our Writers
             </Link>
             
             <Link 
-              href="https://domyhomework.co/reviews/" 
+              href="https://myhomeworkhelp.com/how-it-works/" 
+              className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+            >
+              How It Works
+            </Link>
+            
+            <Link 
+              href="https://myhomeworkhelp.com/student-reviews/" 
               className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
             >
               Reviews
             </Link>
             
             <Link 
-              href="https://domyhomework.co/faq/" 
-              className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
-            >
-              FAQ
-            </Link>
-            
-            <Link 
-              href="https://domyhomework.co/blog/" 
+              href="https://myhomeworkhelp.com/blog/" 
               className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
             >
               Blog
+            </Link>
+            
+            <Link 
+              href="https://myhomeworkhelp.com/faq/" 
+              className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+            >
+              FAQ
             </Link>
           </nav>
 

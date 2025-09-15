@@ -9,10 +9,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DoMyHomework - Order Academic Writing & Homework Help Online",
+  title: "MyHomeworkHelp - Order Academic Writing & Homework Help Online",
   description: "Order professional academic writing, editing, and presentation services online. Get expert homework help with essays, research papers, and more. Fast, reliable, and affordable.",
-  keywords: "homework help, academic writing service, essay writing, research papers, order online, domyhomework, assignment help, professional writers",
-  authors: [{ name: "DoMyHomework" }],
+  keywords: "homework help, academic writing service, essay writing, research papers, order online, myhomeworkhelp, assignment help, professional writers",
+  authors: [{ name: "MyHomeworkHelp" }],
   robots: "index, follow",
   icons: [
     {
@@ -34,15 +34,15 @@ export const metadata: Metadata = {
     }
   ],
   openGraph: {
-    title: "DoMyHomework - Order Academic Writing & Homework Help Online",
+    title: "MyHomeworkHelp - Order Academic Writing & Homework Help Online",
     description: "Order professional academic writing, editing, and presentation services online. Get expert homework help with essays, research papers, and more.",
     type: "website",
     locale: "en_US",
-    url: "https://domyhomework.co",
+    url: "https://myhomeworkhelp.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DoMyHomework - Order Academic Writing & Homework Help Online", 
+    title: "MyHomeworkHelp - Order Academic Writing & Homework Help Online", 
     description: "Order professional academic writing, editing, and presentation services online. Get expert homework help with essays, research papers, and more.",
   }
 };
@@ -67,9 +67,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-gradient-to-br from-purple-50 via-white to-teal-50`}>
-  <Header />
-  {children}
-</body>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }

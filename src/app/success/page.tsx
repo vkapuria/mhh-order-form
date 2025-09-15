@@ -59,7 +59,7 @@ function SuccessContent() {
             </div>
             <h1 className="text-3xl font-bold text-gray-900">🎉 Order Complete!</h1>
             <p className="text-lg text-gray-600 mt-2">
-              Thank you for choosing DoMyHomework - your academic success is our priority
+              Thank you for choosing MyHomeworkHelp - your academic success is our priority
             </p>
           </div>
         </div>
@@ -171,8 +171,8 @@ function SuccessContent() {
                   <EnvelopeIcon className="w-5 h-5 text-purple-600" />
                   <div>
                     <p className="font-medium">Email Support</p>
-                    <a href="mailto:orders@domyhomework.co" className="text-sm text-purple-600 hover:underline">
-                      orders@domyhomework.co
+                    <a href="mailto:orders@myhomeworkhelp.com" className="text-sm text-purple-600 hover:underline">
+                      orders@myhomeworkhelp.com
                     </a>
                   </div>
                 </div>
@@ -234,7 +234,7 @@ function SuccessContent() {
                 ))}
               </div>
               <p className="text-sm italic text-gray-600 mb-3">
-                &quot;DoMyHomework helped me get my essay done perfectly and on time. The quality was amazing and my professor loved it!&quot;
+                &quot;MyHomeworkHelp helped me get my essay done perfectly and on time. The quality was amazing and my professor loved it!&quot;
               </p>
               <p className="text-xs text-gray-500">- Sarah M., Psychology Student</p>
             </Card>
@@ -253,11 +253,11 @@ function SuccessContent() {
                 variant="outline" 
                 className="w-full"
                 onClick={() => {
-                  const shareText = `Just got help with my ${orderData?.serviceType || 'assignment'} from DoMyHomework! 🎓 Professional academic support that actually works.`
-                  const shareUrl = 'https://order.domyhomework.co'
+                  const shareText = `Just got help with my ${orderData?.serviceType || 'assignment'} from MyHomeworkHelp! 🎓 Professional academic support that actually works.`
+                  const shareUrl = 'https://orders.myhomeworkhelp.com'
                   
                   if (navigator.share) {
-                    navigator.share({ title: 'DoMyHomework', text: shareText, url: shareUrl })
+                    navigator.share({ title: 'MyHomeworkHelp', text: shareText, url: shareUrl })
                   } else {
                     navigator.clipboard.writeText(`${shareText} ${shareUrl}`)
                     alert('Link copied to clipboard!')
@@ -276,7 +276,7 @@ function SuccessContent() {
       <div className="bg-gray-50 border-t mt-12">
         <div className="max-w-4xl mx-auto px-4 py-8 text-center">
           <p className="text-gray-600 mb-2">
-            🎓 <strong>DoMyHomework</strong> - Your Academic Success Partner
+            🎓 <strong>MyHomeworkHelp</strong> - Your Academic Success Partner
           </p>
           <p className="text-sm text-gray-500">
             Professional academic services with guaranteed quality and on-time delivery.

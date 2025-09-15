@@ -57,7 +57,7 @@ export default function AdminLayout({
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-center">🔒 DoMyHomework Admin</CardTitle>
+            <CardTitle className="text-center">🔒 MyHomeworkHelp Admin</CardTitle>
             <p className="text-center text-sm text-gray-600">Enter password to access dashboard</p>
           </CardHeader>
           <CardContent>
@@ -94,7 +94,7 @@ export default function AdminLayout({
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b px-6 py-4">
         <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold">🎓 DoMyHomework Admin</h1>
+          <h1 className="text-xl font-bold">🎓 MyHomeworkHelp Admin</h1>
           <Button 
             variant="ghost" 
             onClick={handleLogout}

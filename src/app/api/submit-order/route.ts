@@ -5,6 +5,21 @@ import { calculateEnhancedPricing } from '@/lib/pricing/engine'
 import { sendCustomerConfirmation, sendAdminNotification } from '@/lib/email'
 import { getCountryFromIP, getClientIP } from '@/lib/geolocation'
 
+function detectBrand(request: NextRequest): string {
+  // Option A: Environment variable (recommended for simplicity)
+  const envBrand = process.env.BRAND_NAME
+  if (envBrand === 'myhomeworkhelp') return 'MHH'
+  if (envBrand === 'domyhomework') return 'DMH'
+  
+  // Option B: Domain detection (fallback)
+  const host = request.headers.get('host') || ''
+  if (host.includes('myhomeworkhelp')) return 'MHH'
+  if (host.includes('domyhomework')) return 'DMH'
+  
+  // Default fallback
+  return 'MHH' // Since this is the MHH instance
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check content type
@@ -47,6 +62,7 @@ const orderData = {
   has_files: formData.get('hasFiles') === 'true',
   session_id: formData.get('sessionId') as string,
   country: country,
+  brand: detectBrand(request), // ADD THIS LINE
 }
 
       console.log('📦 Order data extracted:', orderData)
@@ -260,6 +276,7 @@ const orderData = {
           rush_fee: pricing.rushFee,
           session_id: data.sessionId || `session_${Date.now()}`,
           country: country,
+          brand: detectBrand(request), // ADD THIS LINE 
           status: 'pending'
         })
         .select()

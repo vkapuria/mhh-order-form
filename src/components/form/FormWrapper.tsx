@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import ServiceSelector from './ServiceSelector'
 import EmailCapture from './EmailCapture'
 import AssignmentDetails from './AssignmentDetails'
@@ -54,9 +54,9 @@ export default function FormWrapper() {
     }
   }, [formData, currentStep, completedSteps, saveFormData])
 
-  // Track form progress for abandonment detection
+// Track form progress for abandonment detection
 const trackProgress = useCallback(async (step: string) => {
-  if (!formData.email) return // Only track after email capture
+  if (!formData.email) return
   
   try {
     await fetch('/api/track-progress', {
@@ -78,14 +78,44 @@ const trackProgress = useCallback(async (step: string) => {
   } catch (error) {
     console.error('Failed to track progress:', error)
   }
-}, [formData, sessionId])
+}, [sessionId]) // FIXED: Removed formData dependency
 
-// Track whenever step changes (after email capture)
+// Add debounced tracking
+const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+const lastTrackTime = useRef<number>(0)
+
+const debouncedTrackProgress = useCallback((step: string) => {
+  // Rate limiting: max 1 call per 5 seconds
+  const now = Date.now()
+  if (now - lastTrackTime.current < 5000) return
+  
+  // Clear existing timeout
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current)
+  }
+  
+  // Set new timeout - only call API after 2 seconds of inactivity
+  timeoutRef.current = setTimeout(() => {
+    trackProgress(step)
+    lastTrackTime.current = Date.now()
+  }, 2000)
+}, [trackProgress])
+
+// FIXED: Only track on step changes, with debouncing
 useEffect(() => {
   if (formData.email) {
-    trackProgress(currentStep)
+    debouncedTrackProgress(currentStep)
   }
-}, [currentStep, formData.email, trackProgress])
+}, [currentStep, formData.email, debouncedTrackProgress])
+
+// Cleanup timeout on unmount
+useEffect(() => {
+  return () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+  }
+}, [])
 
   // Load saved data on mount
   useEffect(() => {
