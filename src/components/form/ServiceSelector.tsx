@@ -146,7 +146,6 @@ const AnimatedCounter = ({
 }
 
 // Single rotating trust signal
-// Single rotating trust signal - with SVG icons
 const RotatingTrustSignal = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
@@ -218,8 +217,6 @@ const RotatingTrustSignal = () => {
 }
 
 export default function ServiceSelector({ value, onChange }: ServiceSelectorProps) {
-  const [selectedValue, setSelectedValue] = useState<ServiceType | undefined>(value)
-
   // Clear any existing localStorage data on mount
   useEffect(() => {
     try {
@@ -230,25 +227,18 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
     }
   }, [])
 
-  // Only set from props, no localStorage restoration
-  useEffect(() => {
-    if (value && !selectedValue) {
-      setSelectedValue(value)
-    }
-  }, [selectedValue, value])
-
   const handleSelect = (val: ServiceType) => {
-    setSelectedValue(val)
+    onChange(val) // Call parent immediately when user selects
   }
 
   const handleNext = () => {
-    if (selectedValue) {
-      onChange(selectedValue)
+    if (value) {
+      onChange(value)
     }
   }
 
   return (
-    <div className="mx-auto max-w-xl space-y-6 pb-4 lg:pb-8">
+    <div className="mx-auto max-w-xl space-y-6 pb-24 lg:pb-8">
       {/* Header with rotating trust signal */}
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -263,14 +253,14 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
       </div>
 
       <RadioGroup
-        value={selectedValue || ''}
+        value={value || ''}
         onValueChange={(v) => handleSelect(v as ServiceType)}
         className="space-y-3"
         aria-label="Service Type"
       >
         {services.map((service) => {
           const Icon = service.icon
-          const selected = selectedValue === service.value
+          const selected = value === service.value
 
           return (
             <Label key={service.value} htmlFor={service.value} className="block cursor-pointer">
@@ -346,14 +336,14 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
       <div className="lg:static lg:p-0 lg:border-t-0 z-50 pt-4">
         <Button 
           onClick={handleNext}
-          disabled={!selectedValue}
+          disabled={!value}
           className="w-full h-12 text-white font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           style={{ 
             backgroundColor: '#1b1b20', 
             borderRadius: '6px'
           }}
-          onMouseEnter={(e) => !selectedValue || (e.currentTarget.style.backgroundColor = '#0f0f14')}
-          onMouseLeave={(e) => !selectedValue || (e.currentTarget.style.backgroundColor = '#1b1b20')}
+          onMouseEnter={(e) => !value || (e.currentTarget.style.backgroundColor = '#0f0f14')}
+          onMouseLeave={(e) => !value || (e.currentTarget.style.backgroundColor = '#1b1b20')}
         >
           Continue
           <ArrowRightIcon className="w-4 h-4" />
