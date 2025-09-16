@@ -45,38 +45,199 @@ const services: ServiceOption[] = [
   }
 ]
 
-const MEMORY_KEY = 'hwf:lastServiceType'
-
 interface ServiceSelectorProps {
   value?: ServiceType
   onChange: (value: ServiceType) => void
 }
 
+// Dynamic stats calculation - FIXED
+const getMonthlyStats = () => {
+  const now = new Date()
+  const month = now.getMonth() // 0-11
+  const day = now.getDate() // 1-31
+  const daysInMonth = new Date(now.getFullYear(), month + 1, 0).getDate()
+  
+  // Seasonal multipliers for MONTHLY TARGETS
+  const seasonalBoost = [
+    1.1, // Jan - 330-880 target
+    1.3, // Feb - 390-1040 target  
+    1.4, // Mar - 420-1120 target
+    1.5, // Apr - 450-1200 target
+    0.8, // May - 240-640 target (summer)
+    0.7, // Jun - 210-560 target (low season)
+    0.8, // Jul - 240-640 target
+    1.0, // Aug - 300-800 target
+    1.4, // Sep - 420-1120 target (back to school!)
+    1.5, // Oct - 450-1200 target (midterms)
+    1.6, // Nov - 480-1280 target (finals prep)
+    1.2  // Dec - 360-960 target
+  ][month]
+  
+  // Calculate MONTHLY TARGET (300-800 base range)
+  const baseMonthlyTarget = 500 + (day * 8) // Slight daily variation in target
+  const monthlyTarget = Math.round(baseMonthlyTarget * seasonalBoost)
+  const cappedMonthlyTarget = Math.min(Math.max(monthlyTarget, 300), 1200)
+  
+  // Calculate CURRENT PROGRESS through month
+  const progressThroughMonth = day / daysInMonth
+  const currentStudents = Math.round(cappedMonthlyTarget * progressThroughMonth)
+  
+  // Ensure minimum of 50 students (even on day 1)
+  const finalStudents = Math.max(currentStudents, 50)
+  
+  // Calculate assignments based on CURRENT student count (not monthly target)
+  const returningStudents = Math.round(finalStudents * 0.6)
+  const newStudents = finalStudents - returningStudents
+  const assignments = Math.round(returningStudents * 1.8 + newStudents * 1.2)
+  
+  // On-time rate stays the same
+  const onTimeRate = 97 + (day % 2) // 97-98%
+  
+  return {
+    students: finalStudents,
+    assignments,
+    onTimeRate,
+    // Debug info (remove in production)
+    monthlyTarget: cappedMonthlyTarget,
+    progress: Math.round(progressThroughMonth * 100)
+  }
+}
+
+// Animated counter component - custom starting percentage
+const AnimatedCounter = ({ 
+  target, 
+  suffix = '', 
+  startPercentage = 0.8, // Default 80%, but can be customized
+  duration = 2000 
+}: { 
+  target: number
+  suffix?: string
+  startPercentage?: number
+  duration?: number 
+}) => {
+  const [current, setCurrent] = useState(Math.floor(target * startPercentage))
+
+  useEffect(() => {
+    const startValue = Math.floor(target * startPercentage)
+    const difference = target - startValue
+    const increment = difference / (duration / 16) // 60fps
+    let currentValue = startValue
+    
+    setCurrent(startValue)
+    
+    const timer = setInterval(() => {
+      currentValue += increment
+      if (currentValue >= target) {
+        setCurrent(target)
+        clearInterval(timer)
+      } else {
+        setCurrent(Math.floor(currentValue))
+      }
+    }, 16)
+
+    return () => clearInterval(timer)
+  }, [target, duration, startPercentage])
+
+  return (
+    <span className="font-bold">
+      {current.toLocaleString()}{suffix}
+    </span>
+  )
+}
+
+// Single rotating trust signal
+// Single rotating trust signal - with SVG icons
+const RotatingTrustSignal = () => {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
+  const stats = getMonthlyStats()
+
+  const metrics = [
+    {
+      text: 'Students this month',
+      value: stats.students,
+      suffix: '+',
+      icon: '/icons/customers.svg', // You'll need this SVG or use existing one
+      startPercentage: 0.97
+    },
+    {
+      text: 'Assignments Completed',
+      value: stats.assignments,
+      suffix: '+',
+      icon: '/icons/assignments.svg', // Or another appropriate SVG
+      startPercentage: 0.95
+    },
+    {
+      text: 'On-time delivery',
+      value: stats.onTimeRate,
+      suffix: '%',
+      icon: '/icons/on-time.svg', // Your mailed.svg
+      startPercentage: 0.99
+    }
+  ]
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsVisible(false) // Fade out
+      
+      setTimeout(() => {
+        setCurrentIndex(prev => (prev + 1) % metrics.length)
+        setIsVisible(true) // Fade in
+      }, 1000) // Half second for transition
+      
+    }, 7000) // 5 seconds for each metric
+
+    return () => clearInterval(interval)
+  }, [metrics.length])
+
+  const currentMetric = metrics[currentIndex]
+
+  return (
+    <div className="mt-2 flex items-center justify-center gap-2 text-sm">
+      <span 
+        className={`inline-flex items-center gap-2 font-medium transition-all duration-300 ${
+          isVisible ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
+        }`}
+        style={{ color: '#2c4dfa' }}
+      >
+        <img 
+          src={currentMetric.icon} 
+          alt="" 
+          className="w-8 h-8 flex-shrink-0"
+        />
+        <AnimatedCounter 
+          target={currentMetric.value} 
+          suffix={currentMetric.suffix}
+          startPercentage={currentMetric.startPercentage}
+          key={`${currentIndex}-${currentMetric.value}`}
+        />
+        <span>{currentMetric.text}</span>
+      </span>
+    </div>
+  )
+}
+
 export default function ServiceSelector({ value, onChange }: ServiceSelectorProps) {
   const [selectedValue, setSelectedValue] = useState<ServiceType | undefined>(value)
 
-  // Set initial selection based on memory or default
+  // Clear any existing localStorage data on mount
   useEffect(() => {
-    if (!selectedValue && !value) {
-      let initialValue: ServiceType = 'writing' // Default
-      
-      if (typeof window !== 'undefined') {
-        const saved = window.localStorage.getItem(MEMORY_KEY) as ServiceType | null
-        if (saved && services.some((s) => s.value === saved)) {
-          initialValue = saved
-        }
-      }
-      
-      setSelectedValue(initialValue)
+    try {
+      localStorage.removeItem('hwf:lastServiceType')
+      localStorage.removeItem('homework_order_form')
+    } catch (e) {
+      // Silent fail
+    }
+  }, [])
+
+  // Only set from props, no localStorage restoration
+  useEffect(() => {
+    if (value && !selectedValue) {
+      setSelectedValue(value)
     }
   }, [selectedValue, value])
 
   const handleSelect = (val: ServiceType) => {
-    try {
-      window.localStorage.setItem(MEMORY_KEY, val)
-    } catch (e) {
-      console.error('Failed to save to localStorage', e)
-    }
     setSelectedValue(val)
   }
 
@@ -88,7 +249,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
 
   return (
     <div className="mx-auto max-w-xl space-y-6 pb-4 lg:pb-8">
-      {/* Header with micro-trust */}
+      {/* Header with rotating trust signal */}
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">
           What type of help do you need?
@@ -96,12 +257,9 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
         <p className="mt-3 text-base text-gray-600">
           We'll tailor the next steps based on your choice.
         </p>
-        <div className="mt-2 flex items-center justify-center gap-2 text-sm">
-          <span className="inline-flex items-center gap-1 text-purple-600 font-medium">
-            <CheckIcon className="w-4 h-4" />
-            Trusted by 5,000+ students this month
-          </span>
-        </div>
+        
+        {/* Single rotating trust signal */}
+        <RotatingTrustSignal />
       </div>
 
       <RadioGroup
@@ -127,11 +285,11 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
                   }
                 }}
                 className={`
-                  px-4 py-4 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white hover:border-purple-300
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2
+                  px-4 py-4 transition-all duration-200 ease-in-out border-2 hover:shadow-md bg-white hover:border-blue-300
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2
                   ${
                     selected
-                      ? 'border-purple-500 shadow-md bg-purple-50'
+                      ? 'border-blue-500 shadow-md bg-blue-50'
                       : 'border-gray-200'
                   }
                 `}
@@ -141,20 +299,20 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
                   {/* Left side: Icon + Content */}
                   <div className="flex items-center gap-4 flex-1">
                     <div className="flex-shrink-0">
-                      <Icon className={`h-6 w-6 ${selected ? 'text-purple-600' : 'text-gray-600'}`} />
+                      <Icon className={`h-6 w-6 ${selected ? 'text-blue-600' : 'text-gray-600'}`} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className={`text-lg font-semibold ${selected ? 'text-purple-900' : 'text-gray-900'}`}>
+                        <h3 className={`text-lg font-semibold ${selected ? 'text-blue-900' : 'text-gray-900'}`}>
                           {service.title}
                         </h3>
                         {service.popular && (
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs px-2 py-0.5">
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs px-2 py-0.5">
                             Popular
                           </Badge>
                         )}
                       </div>
-                      <p className={`text-sm leading-relaxed ${selected ? 'text-purple-700' : 'text-gray-600'}`}>
+                      <p className={`text-sm leading-relaxed ${selected ? 'text-blue-700' : 'text-gray-600'}`}>
                         {service.description}
                       </p>
                     </div>
@@ -184,7 +342,7 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
         })}
       </RadioGroup>
 
-      {/* Sticky Next button for mobile */}
+      {/* Continue button */}
       <div className="lg:static lg:p-0 lg:border-t-0 z-50 pt-4">
         <Button 
           onClick={handleNext}
@@ -194,8 +352,8 @@ export default function ServiceSelector({ value, onChange }: ServiceSelectorProp
             backgroundColor: '#1b1b20', 
             borderRadius: '6px'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0f0f14'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1b1b20'}
+          onMouseEnter={(e) => !selectedValue || (e.currentTarget.style.backgroundColor = '#0f0f14')}
+          onMouseLeave={(e) => !selectedValue || (e.currentTarget.style.backgroundColor = '#1b1b20')}
         >
           Continue
           <ArrowRightIcon className="w-4 h-4" />

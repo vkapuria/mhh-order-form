@@ -144,7 +144,7 @@ function TopMotivationBar({
         </div>
         <div className="w-28 h-2 rounded-full bg-slate-200 ml-4 overflow-hidden">
           <div
-            className="h-2 bg-[#8800e9] transition-all"
+            className="h-2 bg-[#007bff] transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -171,19 +171,19 @@ function PromisesCard() {
 
       <ul className="space-y-3 text-sm text-slate-700">
         <li className="flex items-center gap-2">
-          <CheckCircleIcon className="w-4 h-4 text-[#8800e9]" />
+          <CheckCircleIcon className="w-4 h-4 text-[#007bff]" />
           Original work & free revisions
         </li>
         <li className="flex items-center gap-2">
-          <ClockIcon className="w-4 h-4 text-[#8800e9]" />
+          <ClockIcon className="w-4 h-4 text-[#007bff]" />
           On-time delivery commitment
         </li>
         <li className="flex items-center gap-2">
-          <ShieldCheckIcon className="w-4 h-4 text-[#8800e9]" />
+          <ShieldCheckIcon className="w-4 h-4 text-[#007bff]" />
           Plagiarism & AI Free Guarantee
         </li>
         <li className="flex items-center gap-2">
-          <LockClosedIcon className="w-4 h-4 text-[#8800e9]" />
+          <LockClosedIcon className="w-4 h-4 text-[#007bff]" />
           SSL-secure checkout
         </li>
       </ul>
@@ -227,16 +227,19 @@ function StatsCard() {
             key={index} 
             className={`relative flex items-start gap-3 p-3 rounded-lg transition-colors ${
               signal.highlight 
-                ? 'bg-purple-50 border border-purple-100 hover:bg-purple-100' 
+                ? 'bg-blue-50 border border-blue-100 hover:bg-blue-100' 
                 : 'hover:bg-gray-50'
             }`}
           >
             <div className="flex-shrink-0">
-              <img 
-                src={signal.icon} 
-                alt={signal.title}
-                className="w-8 h-8"
-              />
+            <img 
+  src={signal.icon} 
+  alt={signal.title}
+  className="w-8 h-8"
+  style={{ 
+    filter: 'brightness(0) saturate(100%) invert(21%) sepia(100%) saturate(3961%) hue-rotate(211deg) brightness(102%) contrast(101%)'
+  }}
+/>
             </div>
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-semibold text-gray-900 leading-tight">
@@ -345,7 +348,7 @@ function ReviewsCard({ reviews }: { reviews: ReviewItem[] }) {
 <div className="flex items-center justify-between mb-1">
   <div className="flex items-center gap-2">
     <span className="text-[12px] text-slate-500">Type:</span>
-    <span className="text-purple-800 py-0.5 rounded-full text-[12px] font-medium">
+    <span className="text-blue-800 py-0.5 rounded-full text-[12px] font-medium">
       {r.subject}
     </span>
   </div>
@@ -369,7 +372,8 @@ function ReviewsCard({ reviews }: { reviews: ReviewItem[] }) {
     <CalendarIcon className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
     <span>{r.label}</span>
   </div>
-  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[11px] font-mono">
+  <span className="px-2 py-0.5 rounded-full text-[11px] text-white" style={{ backgroundColor: '#1b1b20' }}>
+
     {r.code}
   </span>
 </div>
@@ -612,7 +616,7 @@ function PricingSidebarBody({ formData }: { formData: any }) {
               />
             )}
           </div>
-          <button className="w-full h-12 px-6 rounded-lg border-2 border-purple-600 bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 font-medium">
+          <button className="w-full h-12 px-6 rounded-lg border-2 border-blue-600 bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium">
             <ShoppingCartIcon className="w-5 h-5" />
             Continue to Checkout
           </button>

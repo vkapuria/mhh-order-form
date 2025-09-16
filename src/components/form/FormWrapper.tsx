@@ -7,7 +7,7 @@ import AssignmentDetails from './AssignmentDetails'
 import FinalDetails from './FinalDetails'
 import PricingSidebar from '../sidebar/PricingSidebar'
 import ExitIntentModal from '../conversion/ExitIntentModal'
-import EmailRecovery from '../conversion/EmailRecovery'
+// import EmailRecovery from '../conversion/EmailRecovery' // DISABLED
 import { useFormPersistence } from '@/hooks/useFormPersistence'
 import { useExitIntent } from '@/hooks/useExitIntent'
 import { FormStep, ServiceType, OrderFormData } from '@/types'
@@ -29,7 +29,7 @@ export default function FormWrapper() {
     fullName: '',
     instructions: '',
     referenceStyle: '',
-    files: [],  // Make sure this is here
+    files: [],
     hasFiles: undefined
   })
   
@@ -47,12 +47,12 @@ export default function FormWrapper() {
     }
   )
 
-  // Auto-save form data
-  useEffect(() => {
-    if (formData.email) {
-      saveFormData(formData, currentStep, completedSteps)
-    }
-  }, [formData, currentStep, completedSteps, saveFormData])
+  // DISABLED: Auto-save form data - Remove if you want no persistence at all
+  // useEffect(() => {
+  //   if (formData.email) {
+  //     saveFormData(formData, currentStep, completedSteps)
+  //   }
+  // }, [formData, currentStep, completedSteps, saveFormData])
 
 // Track form progress for abandonment detection
 const trackProgress = useCallback(async (step: string) => {
@@ -78,7 +78,7 @@ const trackProgress = useCallback(async (step: string) => {
   } catch (error) {
     console.error('Failed to track progress:', error)
   }
-}, [sessionId]) // FIXED: Removed formData dependency
+}, [sessionId])
 
 // Add debounced tracking
 const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -101,7 +101,7 @@ const debouncedTrackProgress = useCallback((step: string) => {
   }, 2000)
 }, [trackProgress])
 
-// FIXED: Only track on step changes, with debouncing
+// Track on step changes, with debouncing
 useEffect(() => {
   if (formData.email) {
     debouncedTrackProgress(currentStep)
@@ -117,11 +117,15 @@ useEffect(() => {
   }
 }, [])
 
-  // Load saved data on mount
-  useEffect(() => {
-    const stored = getStoredFormData()
-    // Silent check - no console.log
-  }, [getStoredFormData])
+  // DISABLED: Load saved data on mount - No more auto-restoration
+  // useEffect(() => {
+  //   const stored = getStoredFormData()
+  //   if (stored) {
+  //     setFormData(stored.data as Partial<OrderFormData>)
+  //     setCurrentStep(stored.currentStep as FormStep)
+  //     setCompletedSteps(stored.completedSteps as FormStep[])
+  //   }
+  // }, [getStoredFormData])
 
   const markStepCompleted = (step: FormStep) => {
     if (!completedSteps.includes(step)) {
@@ -227,8 +231,6 @@ useEffect(() => {
         const result = await response.json()
         console.log('📦 Response data:', result)
         
-        // In handleFormSubmit, after successful submission:
-
         if (result.success) {
           clearStoredData()
           
@@ -290,8 +292,10 @@ useEffect(() => {
         
         const result = await response.json()
         console.log('📦 Response:', result)
+        
         // Track successful form submission
         await trackProgress('submitted')
+        
         if (result.success) {
           clearStoredData()
           
@@ -336,16 +340,19 @@ useEffect(() => {
     if (!formData.email) {
       setFormData({ ...formData, email })
     }
-    saveFormData({ ...formData, email }, currentStep, completedSteps)
+    // DISABLED: No more auto-save
+    // saveFormData({ ...formData, email }, currentStep, completedSteps)
   }
 
+  // DISABLED: No more auto-restore
   const handleRestoreForm = (savedData: any) => {
-    const stored = getStoredFormData()
-    if (stored) {
-      setFormData(stored.data as Partial<OrderFormData>)
-      setCurrentStep(stored.currentStep as FormStep)
-      setCompletedSteps(stored.completedSteps as FormStep[])
-    }
+    // const stored = getStoredFormData()
+    // if (stored) {
+    //   setFormData(stored.data as Partial<OrderFormData>)
+    //   setCurrentStep(stored.currentStep as FormStep)
+    //   setCompletedSteps(stored.completedSteps as FormStep[])
+    // }
+    console.log('Form restoration disabled')
   }
 
   const renderCurrentStep = () => {
@@ -405,7 +412,7 @@ useEffect(() => {
                 deadline: formData.deadline || '',
                 referenceStyle: formData.referenceStyle || '',
                 pages: formData.pages || 0,
-                hasFiles: formData.hasFiles,  // ← Remove the || false
+                hasFiles: formData.hasFiles,
                 files: formData.files || []
               }}
               onChange={handleDetailsChange}
@@ -423,10 +430,10 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Email Recovery Banner */}
-      <div className="max-w-7xl mx-auto px-4">
+      {/* DISABLED: Email Recovery Banner */}
+      {/* <div className="max-w-7xl mx-auto px-4">
         <EmailRecovery onRestoreForm={handleRestoreForm} />
-      </div>
+      </div> */}
   
       {/* 2-Column Layout: Clean */}
       <div className="grid grid-cols-1 lg:grid-cols-5 min-h-screen">
@@ -468,4 +475,4 @@ useEffect(() => {
       />
     </div>
   )
-  }
+}

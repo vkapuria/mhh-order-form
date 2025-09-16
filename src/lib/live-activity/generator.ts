@@ -435,7 +435,7 @@ export function generateLiveActivityItems(cfg: GenerationConfig = {}): Notificat
           const completion: CompletionNotification = {
             type: 'completion',
             country: pick!.countryCode,
-            orderID: linked.id.replace('ord-', 'DMH-').slice(0, 16).toUpperCase(), // short human-ish
+            orderID: linked.id.replace('ord-', 'MHH-').slice(0, 16).toUpperCase(), // short human-ish
             subject: linked.subject,       // <-- reuse subject from order
             date,
             label,

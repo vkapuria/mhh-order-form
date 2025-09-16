@@ -204,7 +204,7 @@ export type ReviewItem = {
     const letters =
       String.fromCharCode(65 + randomInt(rng, 0, 25)) +
       String.fromCharCode(65 + randomInt(rng, 0, 25));
-    return `DMH-${year}-${digits}${letters}`;
+    return `MHH-${year}-${digits}${letters}`;
   }
   
   // ——— Unique pickers for openers/closers (no repeats) ———
