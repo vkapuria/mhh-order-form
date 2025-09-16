@@ -42,25 +42,30 @@ export async function POST(request: NextRequest) {
     })
     
     // Upsert progress tracking
-    const { data, error } = await supabase
-      .from('form_abandonment')
-      .upsert({
-        session_id: sessionId,
-        email,
-        full_name: fullName,
-        current_step: step,
-        service_type: formData?.serviceType || null,
-        subject: formData?.subject || null,
-        pages: formData?.pages || null,
-        deadline: formData?.deadline || null,
-        country: country,
-        ip_address: clientIP,
-        last_activity: new Date().toISOString(),
-        admin_notified: false
-      }, { 
-        onConflict: 'session_id',
-        ignoreDuplicates: false 
-      })
+    // Upsert progress tracking
+const { data, error } = await supabase
+.from('form_abandonment')
+.upsert({
+  session_id: sessionId,
+  email,
+  full_name: fullName,
+  current_step: step,
+  service_type: formData?.serviceType || null,
+  subject: formData?.subject || null,
+  document_type: formData?.documentType || null,        // ADD THIS
+  instructions: formData?.instructions || null,          // ADD THIS
+  pages: formData?.pages || null,
+  deadline: formData?.deadline || null,
+  reference_style: formData?.referenceStyle || null,    // ADD THIS
+  has_files: formData?.hasFiles || null,                // ADD THIS
+  country: country,
+  ip_address: clientIP,
+  last_activity: new Date().toISOString(),
+  admin_notified: false
+}, { 
+  onConflict: 'session_id',
+  ignoreDuplicates: false 
+})
 
     if (error) {
       console.error('❌ Supabase error:', error)

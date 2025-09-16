@@ -56,35 +56,71 @@ export default function FormWrapper() {
 
 // Track form progress for abandonment detection
 const trackProgress = useCallback(async (step: string) => {
-  if (!formData.email) return
+  console.log('🔍 trackProgress called with:', { step, hasEmail: !!formData.email, sessionId })
+  
+  if (!formData.email) {
+    console.log('⚠️ No email, skipping track')
+    return
+  }
+  
+  console.log('🚀 ATTEMPTING to track progress:', { 
+    email: formData.email, 
+    step, 
+    sessionId,
+    url: window.location.href
+  })
   
   try {
-    await fetch('/api/track-progress', {
+    const payload = {
+      email: formData.email,
+      fullName: formData.fullName,
+      step,
+      formData: {
+        // FIXED: Send ALL form fields
+        serviceType: formData.serviceType,
+        subject: formData.subject,
+        documentType: formData.documentType,        // ADD THIS
+        instructions: formData.instructions,        // ADD THIS
+        pages: formData.pages,
+        deadline: formData.deadline,
+        referenceStyle: formData.referenceStyle,    // ADD THIS
+        hasFiles: formData.hasFiles,                // ADD THIS
+      },
+      sessionId: sessionId
+    }
+    
+    console.log('📤 Sending payload:', payload)
+    
+    const response = await fetch('/api/track-progress', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: formData.email,
-        fullName: formData.fullName,
-        step,
-        formData: {
-          // Existing fields
-          serviceType: formData.serviceType,
-          subject: formData.subject,
-          pages: formData.pages,
-          deadline: formData.deadline,
-          // 🆕 Add these for abandonment emails
-          documentType: formData.documentType,
-          instructions: formData.instructions,
-          referenceStyle: formData.referenceStyle,
-          hasFiles: formData.hasFiles,
-        },
-        sessionId: sessionId
-      })
+      body: JSON.stringify(payload)
     })
+    
+    console.log('📡 Response status:', response.status, response.statusText)
+    
+    if (!response.ok) {
+      console.error('❌ Response not OK:', response.status, response.statusText)
+      const errorText = await response.text()
+      console.error('❌ Error body:', errorText)
+      return
+    }
+    
+    const result = await response.json()
+    console.log('✅ SUCCESS - Response data:', result)
+    
+    // TEMPORARY - Add visual feedback for mobile testing
+    if (result.success) {
+      const dot = document.createElement('div')
+      dot.style.cssText = 'position:fixed;top:10px;right:10px;width:20px;height:20px;background:green;border-radius:50%;z-index:9999;'
+      document.body.appendChild(dot)
+      setTimeout(() => document.body.removeChild(dot), 2000)
+    }
+    
   } catch (error) {
-    console.error('Failed to track progress:', error)
+    console.error('❌ NETWORK ERROR in track progress:', error)
   }
-}, [sessionId]) // Still only depends on sessionId - safe!
+}, [formData, sessionId])
 
 // Add debounced tracking
 const timeoutRef = useRef<NodeJS.Timeout | null>(null)
