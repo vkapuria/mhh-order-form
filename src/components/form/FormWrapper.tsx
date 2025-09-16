@@ -67,10 +67,16 @@ const trackProgress = useCallback(async (step: string) => {
         fullName: formData.fullName,
         step,
         formData: {
+          // Existing fields
           serviceType: formData.serviceType,
           subject: formData.subject,
           pages: formData.pages,
           deadline: formData.deadline,
+          // 🆕 Add these for abandonment emails
+          documentType: formData.documentType,
+          instructions: formData.instructions,
+          referenceStyle: formData.referenceStyle,
+          hasFiles: formData.hasFiles,
         },
         sessionId: sessionId
       })
@@ -78,7 +84,7 @@ const trackProgress = useCallback(async (step: string) => {
   } catch (error) {
     console.error('Failed to track progress:', error)
   }
-}, [sessionId])
+}, [sessionId]) // Still only depends on sessionId - safe!
 
 // Add debounced tracking
 const timeoutRef = useRef<NodeJS.Timeout | null>(null)

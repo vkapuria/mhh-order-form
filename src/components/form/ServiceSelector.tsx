@@ -183,7 +183,7 @@ const RotatingTrustSignal = () => {
       setTimeout(() => {
         setCurrentIndex(prev => (prev + 1) % metrics.length)
         setIsVisible(true) // Fade in
-      }, 1000) // Half second for transition
+      }, 500) // Half second for transition
       
     }, 7000) // 5 seconds for each metric
 

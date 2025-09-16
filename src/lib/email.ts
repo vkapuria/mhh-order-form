@@ -114,7 +114,7 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
         <td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">
           ${data.uploadedFiles.map(file => `
             <div style="margin-bottom: 8px;">
-              <a href="${file.fileUrl}" target="_blank" style="color: #8800e9; text-decoration: none; font-weight: 500;">
+              <a href="${file.fileUrl}" target="_blank" style="color: #2c4dfa; text-decoration: none; font-weight: 500;">
                 📄 ${file.fileName}
               </a> 
               <span style="color: #666; font-size: 12px; margin-left: 8px;">(${(file.fileSize / 1024).toFixed(1)} KB)</span>
@@ -139,129 +139,196 @@ function generateAdminEmailHTML(data: OrderEmailData): string {
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pre-Order Alert</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pre-Order Notification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    /* Reset and base styles */
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; }
+    
+    /* Mobile-first responsive styles */
+    @media screen and (max-width: 600px) {
+      .container { width: 100% !important; max-width: 100% !important; }
+      .mobile-padding { padding: 20px !important; }
+      .mobile-text-center { text-align: center !important; }
+      .mobile-stack { display: block !important; width: 100% !important; }
+      .mobile-hide { display: none !important; }
+      .mobile-font-size { font-size: 14px !important; }
+      .header-padding { padding: 24px !important; }
+      .content-padding { padding: 24px !important; }
+      
+      /* Stack table cells on mobile */
+      .responsive-table td {
+        display: block !important;
+        width: 100% !important;
+        text-align: left !important;
+        padding: 8px 0 !important;
+      }
+      
+      .responsive-table td:first-child {
+        font-weight: 600 !important;
+        color: #111827 !important;
+      }
+    }
+    
+    @media screen and (min-width: 601px) {
+      .desktop-width { width: 800px !important; }
+    }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f5f5f5;">
-  <div style="max-width: 700px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+<body style="margin:0; padding:0; background:#f8f9fa; font-family:'Inter', Arial, sans-serif; line-height:1.6;">
 
-    <!-- Header -->
-    <div style="background: #000; color: white; padding: 25px; text-align: center;">
-      <img src="https://myhomeworkhelp.com/wp-content/uploads/2024/03/Hero-Logo.png" alt="MyHomeworkHelp Logo" style="max-height: 50px; display: block; margin: 0 auto 10px auto;">
-      <h1 style="margin: 0; font-size: 22px; font-weight: bold;">🔔 Pre-Order Alert</h1>
-      <p style="margin: 8px 0 0 0; opacity: 0.85; font-size: 15px;">New order inquiry received - customer details below</p>
-    </div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table class="container desktop-width" width="600" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08); max-width:100%;">
+          
+          <!-- Header -->
+          <tr>
+            <td class="header-padding" style="background:#1a1a1a; padding:32px; text-align:center; color:#ffffff;">
+              <img src="https://myhomeworkhelp.com/wp-content/uploads/2024/03/Hero-Logo.png" alt="MyHomeworkHelp" style="max-height:50px; margin-bottom:16px; height:auto; display:block; margin-left:auto; margin-right:auto;">
+              <h1 style="margin:0; font-size:22px; font-weight:600; letter-spacing:-0.02em;">Pre-Order Notification</h1>
+              <p style="margin:8px 0 0; font-size:14px; opacity:0.8;">New customer inquiry awaiting review</p>
+            </td>
+          </tr>
 
-    <!-- Content -->
-    <div style="padding: 25px;">
+          <!-- Main Content -->
+          <tr>
+            <td class="content-padding" style="padding:32px;">
+              
+              <p style="font-size:16px; color:#374151; margin:0 0 32px; font-weight:500;">
+                A customer has completed the order form and is currently on the checkout page.
+              </p>
 
-      <p style="font-size: 15px; margin-bottom: 20px; color: #555;">
-        A customer has completed the order form and is currently on the checkout page. Here are the details:
-      </p>
+              <!-- Customer Information -->
+              <div style="margin-bottom:24px; border:1px solid #e5e7eb; border-radius:6px; overflow:hidden;">
+                <div style="background:#f8f9fa; padding:16px; font-weight:600; color:#111827; font-size:14px; border-bottom:1px solid #e5e7eb;">
+                  Customer Information
+                </div>
+                <div style="padding:20px;">
+                  <table class="responsive-table" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px; color:#374151;">
+                    <tr>
+                      <td style="padding:8px 0; width:120px; font-weight:500; vertical-align:top;">Name:</td>
+                      <td style="padding:8px 0;">${data.customerName}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Email:</td>
+                      <td style="padding:8px 0;">
+                        <a href="mailto:${data.customerEmail}" style="color:#1a1a1a; text-decoration:none; word-break:break-all;">${data.customerEmail}</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Country:</td>
+                      <td style="padding:8px 0;">${data.customerCountry}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
 
-      <!-- Contact Information -->
-      <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
-        👤 Contact Information
-      </h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5; font-size: 14px;">
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold; width: 160px;">Name</td>
-          <td style="padding: 12px;">${data.customerName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Email</td>
-          <td style="padding: 12px;">
-            <a href="mailto:${data.customerEmail}" style="color: #8800e9; text-decoration: none;">${data.customerEmail}</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Country</td>
-          <td style="padding: 12px;">🌍 ${data.customerCountry}</td>
-        </tr>
-      </table>
+              <!-- Order Details -->
+              <div style="margin-bottom:24px; border:1px solid #e5e7eb; border-radius:6px; overflow:hidden;">
+                <div style="background:#f8f9fa; padding:16px; font-weight:600; color:#111827; font-size:14px; border-bottom:1px solid #e5e7eb;">
+                  Order Details
+                </div>
+                <div style="padding:20px;">
+                  <table class="responsive-table" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px; color:#374151;">
+                    <tr>
+                      <td style="padding:8px 0; width:120px; font-weight:500; vertical-align:top;">Order ID:</td>
+                      <td style="padding:8px 0;">
+                        <span style="color:#1a1a1a; font-family:monospace; font-weight:600; background:#f3f4f6; padding:4px 8px; border-radius:3px; font-size:13px;">
+                          #${data.orderId.slice(0, 8).toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Service Type:</td>
+                      <td style="padding:8px 0;">${data.serviceType}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Subject:</td>
+                      <td style="padding:8px 0;">${data.subject}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Document Type:</td>
+                      <td style="padding:8px 0;">${data.documentType.replace(/_/g,' ')}</td>
+                    </tr>
+                  </table>
+                  ${filesSection ? `<div style="margin-top:16px; padding-top:16px; border-top:1px solid #e5e7eb;">${filesSection}</div>` : ''}
+                </div>
+              </div>
 
-      <!-- Order Details -->
-      <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
-        📝 Order Details
-      </h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5; font-size: 14px;">
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold; width: 160px;">Order ID</td>
-          <td style="padding: 12px; font-family: monospace; color: #8800e9; font-weight: bold;">#${data.orderId.slice(0, 8).toUpperCase()}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Service Type</td>
-          <td style="padding: 12px; text-transform: capitalize;">${data.serviceType}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Subject</td>
-          <td style="padding: 12px; text-transform: capitalize;">${data.subject}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Document Type</td>
-          <td style="padding: 12px; text-transform: capitalize;">${data.documentType.replace(/_/g, ' ')}</td>
-        </tr>
-        <tr>
-          ${(() => { const { unitSingular, unitPlural, unitLabel } = getUnitLabels(data.serviceType); return `<td style="padding: 12px; background: #f9f9f9; font-weight: bold;">${unitLabel}</td><td style=\"padding: 12px;\">${data.pages} ${data.pages === 1 ? unitSingular : unitPlural}</td>` })()}
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Deadline</td>
-          <td style="padding: 12px;">${data.deadline} day${data.deadline !== '1' ? 's' : ''} (${getDeadlineDate(data.deadline)})</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Reference Style</td>
-          <td style="padding: 12px; text-transform: uppercase;">${data.referenceStyle}</td>
-        </tr>
-        ${data.instructions ? `
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Instructions</td>
-          <td style="padding: 12px; font-style: italic;">${data.instructions}</td>
-        </tr>
-        ` : ''}
-        ${filesSection}
-      </table>
+              <!-- Pricing -->
+              <div style="margin-bottom:32px; border:1px solid #e5e7eb; border-radius:6px; overflow:hidden;">
+                <div style="background:#f8f9fa; padding:16px; font-weight:600; color:#111827; font-size:14px; border-bottom:1px solid #e5e7eb;">
+                  Pricing Summary
+                </div>
+                <div style="padding:20px;">
+                  <table class="responsive-table" width="100%" cellspacing="0" cellpadding="0" style="font-size:14px; color:#374151;">
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Base Price:</td>
+                      <td style="padding:8px 0; text-align:right;">$${data.basePrice.toFixed(2)}</td>
+                    </tr>
+                    ${data.savings > 0 ? `
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; color:#059669; vertical-align:top;">Discount:</td>
+                      <td style="padding:8px 0; text-align:right; color:#059669;">-$${data.savings.toFixed(2)}</td>
+                    </tr>
+                    ` : ''}
+                    ${data.rushFee > 0 ? `
+                    <tr>
+                      <td style="padding:8px 0; font-weight:500; vertical-align:top;">Rush Fee:</td>
+                      <td style="padding:8px 0; text-align:right;">+$${data.rushFee.toFixed(2)}</td>
+                    </tr>
+                    ` : ''}
+                  </table>
+                  
+                  <!-- Total Section -->
+                  <div style="margin-top:16px; padding-top:16px; border-top:2px solid #e5e7eb;">
+                    <table width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="font-weight:600; font-size:18px; color:#111827; padding:8px 0;">Total:</td>
+                        <td style="text-align:right; font-weight:700; font-size:20px; color:#111827; padding:8px 0;">$${data.totalPrice.toFixed(2)}</td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
 
-      <!-- Pricing -->
-      <h3 style="color: #8800e9; margin: 25px 0 15px 0; font-size: 16px; border-bottom: 2px solid #8800e9; padding-bottom: 5px;">
-        💰 Pricing Breakdown
-      </h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #e5e5e5; font-size: 14px;">
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold; width: 160px;">Base Price</td>
-          <td style="padding: 12px;">$${data.basePrice.toFixed(2)}</td>
-        </tr>
-        ${data.savings > 0 ? `
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Discount</td>
-          <td style="padding: 12px; color: #10b981;">-$${data.savings.toFixed(2)}</td>
-        </tr>
-        ` : ''}
-        ${data.rushFee > 0 ? `
-        <tr>
-          <td style="padding: 12px; background: #f9f9f9; font-weight: bold;">Rush Fee</td>
-          <td style="padding: 12px; color: #f59e0b;">+$${data.rushFee.toFixed(2)}</td>
-        </tr>
-        ` : ''}
-        <tr style="background: #8800e9; color: white;">
-          <td style="padding: 15px; font-weight: bold; font-size: 15px;">Total Price</td>
-          <td style="padding: 15px; font-weight: bold; font-size: 17px;">$${data.totalPrice.toFixed(2)}</td>
-        </tr>
-      </table>
+              <!-- Action Required -->
+              <div style="background:#fef3c7; border:1px solid #fbbf24; border-radius:6px; padding:20px;">
+                <table width="100%" cellspacing="0" cellpadding="0">
+                  <tr>
+                    <td style="width:24px; vertical-align:top; padding-right:12px;">
+                      <div style="width:20px; height:20px; background:#f59e0b; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:12px;">!</div>
+                    </td>
+                    <td>
+                      <p style="margin:0; font-size:14px; color:#92400e; font-weight:500; line-height:1.5;">
+                        <strong>Action Required:</strong> Customer is currently on checkout page. Follow up if payment is not completed within 30 minutes.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </div>
 
-      <!-- Action Required -->
-      <div style="background: #f9f9f9; border-left: 4px solid #dc2626; border-radius: 6px; padding: 15px; margin-top: 20px;">
-        <p style="margin: 0; color: #b91c1c; font-size: 14px;">
-          ⚠️ The customer is currently on the checkout page. Follow up if payment is not completed within 30 minutes.
-        </p>
-      </div>
-    </div>
+            </td>
+          </tr>
 
-    <!-- Footer -->
-    <div style="background: #f8f9fa; padding: 15px; text-align: center; border-top: 1px solid #e5e5e5;">
-      <p style="margin: 0; color: #666; font-size: 13px;">
-        MyHomeworkHelp | Admin Notification System 
-      </p>
-    </div>
-  </div>
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f8f9fa; text-align:center; padding:24px; border-top:1px solid #e5e7eb;">
+              <p style="margin:0; font-size:12px; color:#6b7280; line-height:1.4;">
+                MyHomeworkHelp<br class="mobile-hide">
+                <span class="mobile-hide">&bull;</span> Admin Notification System
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>
   `
@@ -303,7 +370,7 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
 
       <!-- Order Summary (Minimal) -->
       <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0;">
-        <h3 style="margin: 0 0 15px 0; color: #8800e9; font-size: 18px;">📋 Order #${data.orderId.slice(0, 8).toUpperCase()}</h3>
+        <h3 style="margin: 0 0 15px 0; color: #2c4dfa; font-size: 18px;">📋 Order #${data.orderId.slice(0, 8).toUpperCase()}</h3>
         <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
           <tr>
             <td style="padding: 6px 0; color: #666;">Service:</td>
@@ -322,15 +389,15 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
             <td style="padding: 6px 0; font-weight: bold; color:#d9534f;">${data.deadline} day${data.deadline !== '1' ? 's' : ''}</td>
           </tr>
           <tr style="border-top: 1px solid #ddd; font-weight: bold;">
-            <td style="padding: 10px 0 5px 0; color: #8800e9;">Total:</td>
-            <td style="padding: 10px 0 5px 0; color: #8800e9; font-size: 16px;">$${data.totalPrice.toFixed(2)}</td>
+            <td style="padding: 10px 0 5px 0; color: #2c4dfa;">Total:</td>
+            <td style="padding: 10px 0 5px 0; color: #2c4dfa; font-size: 16px;">$${data.totalPrice.toFixed(2)}</td>
           </tr>
         </table>
       </div>
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${data.checkoutUrl}" style="display: inline-block; background: #8800e9; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+        <a href="${data.checkoutUrl}" style="display: inline-block; background: #2c4dfa; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
           Secure My Expert Now
         </a>
       </div>
@@ -338,38 +405,7 @@ function generateCustomerEmailHTML(data: OrderEmailData): string {
       <p style="font-size: 14px; color: #666; text-align: center; margin-top: 10px;">
         ⏳ <strong>Tip:</strong> Experts are assigned quickly. Complete payment today to lock in your deadline.
       </p>
-
-      <!-- Social Proof -->
-      <div style="background: #fef9f5; border: 1px solid #f3e1d0; border-radius: 8px; padding: 15px; margin-top: 25px; text-align: center; font-size: 14px; color: #555;">
-        ⭐⭐⭐⭐⭐ Trusted by <strong>12,000+ students</strong><br/>
-        “Saved me hours on my Statistics project” – Maria, USA
-      </div>
-
-      <!-- Guarantees -->
-      <div style="border-top: 1px solid #e5e5e5; margin-top: 30px; padding-top: 20px;">
-        <h4 style="color: #8800e9; margin: 0 0 15px 0; font-size: 16px;">✅ Our Guarantees</h4>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-          <div style="flex: 1; min-width: 160px; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 6px;">
-            <div style="font-size: 22px; margin-bottom: 8px;">⏰</div>
-            <div style="font-size: 14px; font-weight: 500; color:#333;">On-Time Delivery</div>
-          </div>
-          <div style="flex: 1; min-width: 160px; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 6px;">
-            <div style="font-size: 22px; margin-bottom: 8px;">🛡️</div>
-            <div style="font-size: 14px; font-weight: 500; color:#333;">100% Original Work</div>
-          </div>
-          <div style="flex: 1; min-width: 160px; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 6px;">
-            <div style="font-size: 22px; margin-bottom: 8px;">🔄</div>
-            <div style="font-size: 14px; font-weight: 500; color:#333;">Free Revisions</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Second CTA -->
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${data.checkoutUrl}" style="display: inline-block; background: #8800e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px;">
-          Complete Payment
-        </a>
-      </div>
+      
     </div>
 
     <!-- Footer -->

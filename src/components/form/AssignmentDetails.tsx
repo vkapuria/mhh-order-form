@@ -6,21 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import StepSummary from './StepSummary'
-
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command"
-
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select'
 
 import {
   DocumentTextIcon,
@@ -30,8 +16,6 @@ import {
   PencilSquareIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
-import { ChevronsUpDown } from 'lucide-react'
 import type { ServiceType } from '@/types'
 
 interface AssignmentDetailsProps {
@@ -219,8 +203,6 @@ export default function AssignmentDetails({
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [touched, setTouched] = useState({ subject: false, documentType: false, instructions: false })
-  const [subjectOpen, setSubjectOpen] = useState(false)
-  const [documentTypeOpen, setDocumentTypeOpen] = useState(false)
   const mainFormRef = useRef<HTMLDivElement>(null)
 
   // Validation
@@ -247,6 +229,7 @@ export default function AssignmentDetails({
       setValidationState(prev => ({ ...prev, subject: 'valid' }))
     }
   }
+  
   const handleDocumentTypeChange = (value: string) => {
     onChange('documentType', value)
     if (errors.documentType && value) {
@@ -254,6 +237,7 @@ export default function AssignmentDetails({
       setValidationState(prev => ({ ...prev, documentType: 'valid' }))
     }
   }
+  
   const handleInstructionsChange = (value: string) => {
     onChange('instructions', value)
     if (errors.instructions && value.trim().length >= 20) {
@@ -262,19 +246,21 @@ export default function AssignmentDetails({
     }
   }
 
-  // Blur
+  // Blur handlers
   const handleSubjectBlur = () => {
     setTouched(prev => ({ ...prev, subject: true }))
     const error = validateSubject(data.subject)
     setErrors(prev => ({ ...prev, subject: error || undefined }))
     setValidationState(prev => ({ ...prev, subject: error ? 'invalid' : 'valid' }))
   }
+  
   const handleDocumentTypeBlur = () => {
     setTouched(prev => ({ ...prev, documentType: true }))
     const error = validateDocumentType(data.documentType)
     setErrors(prev => ({ ...prev, documentType: error || undefined }))
     setValidationState(prev => ({ ...prev, documentType: error ? 'invalid' : 'valid' }))
   }
+  
   const handleInstructionsBlur = () => {
     setTouched(prev => ({ ...prev, instructions: true }))
     const error = validateInstructions(data.instructions)
@@ -355,16 +341,6 @@ export default function AssignmentDetails({
     data.documentType.trim().length > 0 &&
     data.instructions.trim().length >= 20
 
-  const selectedSubjectLabel =
-    data.subject
-      ? allSubjects.flatMap(g => g.options).find(s => s.value === data.subject)?.label
-      : ''
-
-  const selectedDocTypeLabel =
-    data.documentType
-      ? allDocumentTypes.flatMap(g => g.options).find(d => d.value === data.documentType)?.label
-      : ''
-
   return (
     <div className="space-y-3 sm:space-y-6 max-w-4xl mx-auto">
       {/* Summaries */}
@@ -424,55 +400,27 @@ export default function AssignmentDetails({
                 Select Subject<span className="text-red-500">*</span>
               </Label>
 
-              <Popover open={subjectOpen} onOpenChange={setSubjectOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={subjectOpen}
-                    className="w-full justify-between text-base rounded-lg"
-                    style={{ 
-                      height: '54px', 
-                      border: '1px solid #0f0f10'
-                    }}
-                    onBlur={handleSubjectBlur}
-                  >
-                    {selectedSubjectLabel || 'Select subject...'}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="p-0" 
-                  style={{ 
-                    minWidth: 'var(--radix-popover-trigger-width)',
-                    width: 'max-content',
-                    maxWidth: '400px'
-                  }}
-                >
-                  <Command>
-                    <CommandInput placeholder="Search subject..." />
-                    <CommandList>
-                      <CommandEmpty>No subject found.</CommandEmpty>
-                      {allSubjects.map((group) => (
-                        <CommandGroup key={group.group} heading={group.group}>
-                          {group.options.map((subject) => (
-                            <CommandItem
-                              key={subject.value}
-                              value={subject.value}
-                              onSelect={() => {
-                                handleSubjectChange(subject.value)
-                                setSubjectOpen(false) // Close after selection
-                              }}
-                            >
-                              {subject.label}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
+              <Select
+                value={data.subject}
+                onValueChange={handleSubjectChange}
+                onOpenChange={(open) => !open && handleSubjectBlur()}
+              >
+                <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
+                  <SelectValue placeholder="Select subject..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {allSubjects.map((group) => (
+                    <SelectGroup key={group.group}>
+                      <SelectLabel>{group.group}</SelectLabel>
+                      {group.options.map((subject) => (
+                        <SelectItem key={subject.value} value={subject.value}>
+                          {subject.label}
+                        </SelectItem>
                       ))}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {errors.subject && touched.subject && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
@@ -494,55 +442,27 @@ export default function AssignmentDetails({
                 {serviceType === 'presentation' ? 'Assignment Type' : 'Type of paper'}<span className="text-red-500">*</span>
               </Label>
 
-              <Popover open={documentTypeOpen} onOpenChange={setDocumentTypeOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={documentTypeOpen}
-                    className="w-full justify-between text-base rounded-lg"
-                    style={{ 
-                      height: '54px', 
-                      border: '1px solid #0f0f10'
-                    }}
-                    onBlur={handleDocumentTypeBlur}
-                  >
-                    {selectedDocTypeLabel || 'Select document type...'}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent 
-                  className="p-0" 
-                  style={{ 
-                    minWidth: 'var(--radix-popover-trigger-width)',
-                    width: 'max-content',
-                    maxWidth: '400px'
-                  }}
-                >
-                  <Command>
-                    <CommandInput placeholder="Search document type..." />
-                    <CommandList>
-                      <CommandEmpty>No type found.</CommandEmpty>
-                      {allDocumentTypes.map((group) => (
-                        <CommandGroup key={group.group} heading={group.group}>
-                          {group.options.map((type) => (
-                            <CommandItem
-                              key={type.value}
-                              value={type.value}
-                              onSelect={() => {
-                                handleDocumentTypeChange(type.value)
-                                setDocumentTypeOpen(false)
-                              }}
-                            >
-                              {type.label}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
+              <Select
+                value={data.documentType}
+                onValueChange={handleDocumentTypeChange}
+                onOpenChange={(open) => !open && handleDocumentTypeBlur()}
+              >
+                <SelectTrigger className="w-full text-base rounded-lg" style={{ height: '54px', border: '1px solid #0f0f10' }}>
+                  <SelectValue placeholder="Select document type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {allDocumentTypes.map((group) => (
+                    <SelectGroup key={group.group}>
+                      <SelectLabel>{group.group}</SelectLabel>
+                      {group.options.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
                       ))}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
 
               {errors.documentType && touched.documentType && (
                 <p className="text-sm text-red-600 flex items-center gap-1">
