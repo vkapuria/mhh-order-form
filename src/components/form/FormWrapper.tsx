@@ -159,15 +159,36 @@ useEffect(() => {
   }
 }, [])
 
-  // DISABLED: Load saved data on mount - No more auto-restoration
-  // useEffect(() => {
-  //   const stored = getStoredFormData()
-  //   if (stored) {
-  //     setFormData(stored.data as Partial<OrderFormData>)
-  //     setCurrentStep(stored.currentStep as FormStep)
-  //     setCompletedSteps(stored.completedSteps as FormStep[])
-  //   }
-  // }, [getStoredFormData])
+// 🆕 ADD THIS NEW useEffect - Page visibility tracking for abandonment
+useEffect(() => {
+  const handleBeforeUnload = () => {
+    if (formData.email && currentStep !== 'service') {
+      // Only fires once when user leaves - no spam
+      const payload = JSON.stringify({
+        email: formData.email,
+        fullName: formData.fullName,
+        step: currentStep + '_final', // Mark as final capture
+        formData: {
+          serviceType: formData.serviceType,
+          subject: formData.subject,
+          documentType: formData.documentType,
+          instructions: formData.instructions,
+          pages: formData.pages,
+          deadline: formData.deadline,
+          referenceStyle: formData.referenceStyle,
+          hasFiles: formData.hasFiles,
+        },
+        sessionId: sessionId
+      })
+      
+      // Use sendBeacon for reliability during page unload
+      navigator.sendBeacon('/api/track-progress', payload)
+    }
+  }
+
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+}, [formData, currentStep, sessionId])
 
   const markStepCompleted = (step: FormStep) => {
     if (!completedSteps.includes(step)) {
